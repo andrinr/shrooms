@@ -65,3 +65,9 @@ The weather snapshot and live refresh now include seven-day sunshine hours and f
 Other potentially useful inputs—soil pH, substrate/deadwood, frost damage, and fine-scale terrain shading—remain outside the score until suitable data and response functions are available.
 
 References: [Open-Meteo variable definitions](https://open-meteo.com/en/docs), [WSL fungal ecology research](https://www.wsl.ch/en/biodiversity/species-diversity/fungi/), [wood hedgehog habitat](https://www.first-nature.com/fungi/hydnum-repandum.php), [saffron milkcap habitat](https://www.first-nature.com/fungi/lactarius-deliciosus.php), and [NDFF bay bolete habitat observations](https://www.verspreidingsatlas.nl/biodiversiteit/habitat-distribution.aspx?soortnummer=10142020).
+
+## Visible protection overlay
+
+The map explicitly marks GIS-ZH forest reserves with brown boundaries and diagonal hatching, above both habitat and forest-type colors. Clicking a reserve shows its name and source identifier. The legend identifies the coverage as **forest reserves only**; unmarked areas can have other protections or local restrictions. Loading failures display an explicit warning and retry button.
+
+`data/protected.js` contains 594 reserve groups from the same 1,814 source polygons used for the habitat exclusion mask. Geometry is clipped to the canton and simplified by 5 m for display. Habitat exclusion still uses the existing 50 m raster, so display boundaries and score-mask edges can differ slightly. Source hash and coverage metadata are included in the compressed asset.

@@ -82,3 +82,17 @@ test('basemap is bundled, geographically bounded, and has no external SVG resour
  assert.match(svg,/<svg /);assert.doesNotMatch(svg,/<script|<image|(?:href|src)=|url\(/i);
  assert.doesNotMatch(fs.readFileSync('src/app.js','utf8'),/L\.tileLayer\(/);
 });
+
+test('protected forest reserve overlay loads with named polygons and source provenance',async()=>{
+ const {load}=loader();const reserves=await load('protected');
+ assert.equal(reserves.features.length,reserves.metadata.reserveCount);
+ assert.ok(reserves.features.length>500);
+ assert.equal(reserves.metadata.sourceSha256,JSON.parse(fs.readFileSync('data/sources.json','utf8')).sources['reserves.json'].sha256);
+ const ids=new Set();
+ for(const f of reserves.features){
+  assert.ok(f.properties.name);assert.ok(!ids.has(f.properties.id));ids.add(f.properties.id);
+  assert.ok(['Polygon','MultiPolygon'].includes(f.geometry.type));
+  const polygons=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
+  for(const polygon of polygons)for(const ring of polygon){assert.ok(ring.length>=4);assert.deepEqual(ring[0],ring[ring.length-1]);}
+ }
+});

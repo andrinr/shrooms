@@ -23,6 +23,7 @@ Explore forests by tree composition, moisture, slope, and season. Built with pla
 - **Interactive heatmap:** pan, zoom, search municipalities, and inspect the inputs behind every score. Pink highlights stronger relative signals; the legend shows the score thresholds.
 - **4,726 forest cells:** 500 m scores built from official forest surveys and terrain sampled at 50 m.
 - **Detailed bundled basemap:** major roads, rivers, and 904 settlement locations, with labels revealed as you zoom. No live map-tile requests.
+- **Visible forest reserves:** hatched boundaries and named popups, with explicit coverage limits.
 - **Weather context:** rainfall, soil moisture, humidity, temperature, sunshine, and a provisional drying adjustment. A dated snapshot ships with the app; live refresh is optional.
 - **Static delivery:** compressed regional geometry files load as needed. No framework, database, or runtime build step.
 

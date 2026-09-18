@@ -125,6 +125,36 @@
     $('reset-view').addEventListener('click',()=>{state.search='';$('place-search').value='';all();});
     state.map.on('moveend',()=>{renderList();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
   }
+  async function loadProtected() {
+    if(!state.map)return;
+    $('protection-status').textContent='Loading reserve boundaries…';
+    $('retry-protection').hidden=true;
+    try {
+      const reserves=await window.SHROOMS_LOAD('protected');
+      const pane=state.map.getPane('protectedAreas')||state.map.createPane('protectedAreas');
+      pane.style.zIndex=450;
+      const renderer=L.svg({pane:'protectedAreas'}).addTo(state.map);
+      const svg=pane.querySelector('svg');
+      const ns='http://www.w3.org/2000/svg';
+      const defs=document.createElementNS(ns,'defs');
+      const pattern=document.createElementNS(ns,'pattern');
+      pattern.setAttribute('id','reserve-hatch');pattern.setAttribute('width','8');pattern.setAttribute('height','8');pattern.setAttribute('patternUnits','userSpaceOnUse');
+      const background=document.createElementNS(ns,'rect');
+      background.setAttribute('width','8');background.setAttribute('height','8');background.setAttribute('fill','#fff1dc');background.setAttribute('fill-opacity','.75');
+      const stripes=document.createElementNS(ns,'path');
+      stripes.setAttribute('d','M-2 2L2 -2M0 8L8 0M6 10L10 6');stripes.setAttribute('stroke','#863e25');stripes.setAttribute('stroke-width','1.5');
+      pattern.append(background,stripes);defs.append(pattern);svg.prepend(defs);
+      L.geoJSON(reserves,{pane:'protectedAreas',renderer,style:{color:'#863e25',weight:1.5,fillColor:'url(#reserve-hatch)',fillOpacity:1},onEachFeature(feature,layer){
+        layer.bindTooltip(`${escape(feature.properties.name)} · protected forest reserve`,{sticky:true});
+        layer.bindPopup(`<div class="reserve-popup"><strong>${escape(feature.properties.name)}</strong><p>Protected forest reserve</p><p>Excluded from habitat scores. Check the official reserve rules before visiting or collecting.</p><small>GIS-ZH Waldreservate · ${escape(feature.properties.id)}. Boundaries simplified for display; other protections may apply outside this layer.</small><p><a href="https://maps.zh.ch/" target="_blank" rel="noopener noreferrer">Check the official GIS-ZH map ↗</a></p></div>`);
+      }}).addTo(state.map);
+      $('protection-status').textContent=`${reserves.features.length} reserves · hatched areas excluded from scores`;
+    }catch(error){
+      $('protection-status').textContent='Reserve boundaries unavailable — protection coverage is not shown.';
+      $('retry-protection').hidden=false;
+      console.warn('Protected areas unavailable',error.message);
+    }
+  }
   async function loadTile(key) {
     const items=await window.SHROOMS_LOAD(key);
     if(loadedTiles.has(key))return;
@@ -191,5 +221,6 @@
   $('heatmap-mode').addEventListener('click',()=>mapMode('heat'));
   $('points-mode').addEventListener('click',()=>mapMode('forest'));
   $('refresh-weather').addEventListener('click',()=>loadWeather(true));
-  recompute();initMap();initialWeather();
+  $('retry-protection').addEventListener('click',loadProtected);
+  recompute();initMap();loadProtected();initialWeather();
 })();

@@ -70,3 +70,13 @@ Omit `--download` to reuse the cached OpenStreetMap extract. The SVG and label f
 | `docs/media/` | Recorded UI showcase; excluded from the deployment artifact |
 
 The showcase GIF is a 14-second sequence of real browser captures cropped to the map workspace: two zoom steps followed by species changes, with two seconds per scene. Its historical scores are illustrative; they are not current conditions.
+
+## Rebuild protected-area markings
+
+After refreshing the cached GIS-ZH sources, run:
+
+```sh
+.venv/bin/python scripts/build_protected.py
+```
+
+Commit `data/protected.js` together with rebuilt habitat data. CI verifies that the overlay and habitat metadata refer to the same reserve source hash.
