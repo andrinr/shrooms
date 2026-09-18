@@ -1,6 +1,6 @@
 ![shrooms — Follow the fungi. Colorful mushrooms and orbital patterns from the homepage banner.](docs/media/banner.png)
 
-# shrooms ✳
+# shrooms
 
 **Follow the fungi.** A mushroom habitat explorer for the **canton of Zürich**.
 
@@ -56,7 +56,7 @@ CI also produces a `shrooms-static-site` artifact containing just deployable fil
 
 Weather is much coarser than the forest grid. Soil acidity, deadwood, frost damage, and fine-scale microclimate are not modeled. Forest reserves are excluded, but the map does not establish collection permission.
 
-**[Model, weights, provenance, and limitations →](docs/model-and-data.md)**
+**[Model, weights, provenance, and limitations](docs/model-and-data.md)**
 
 ## Development
 
@@ -70,7 +70,7 @@ node scripts/package_site.cjs
 
 CI runs on pushes and pull requests. Tests use committed data and fixed dates, so they do not depend on external weather or map services.
 
-**[Data preparation, Python tools, CI, and project layout →](docs/development.md)**
+**[Data preparation, Python tools, CI, and project layout](docs/development.md)**
 
 ## License
 
