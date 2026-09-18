@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#112820" />
+    <meta name="description" content="Explore mushroom habitat signals across the canton of Zürich." />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>MycoMap Zürich — find the right forest</title>
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+    <link rel="preconnect" href="https://api.open-meteo.com" />
+    <link rel="stylesheet" href="./vendor/leaflet.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./vendor/leaflet.js"></script>
+    <script defer src="./src/data.js"></script>
+    <script defer src="./src/scoring.js"></script>
+    <script defer src="./src/app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="MycoMap Zürich home"><span class="brand-mark">✳</span><span>myco<span class="brand-light">map</span><small>ZÜRICH</small></span></a>
+        <nav class="topnav" aria-label="Main navigation"><a href="#explore">Explore map</a><a href="#method">How it works</a><a href="#field-notes">Field notes</a></nav>
+        <span class="topbar-tag"><span class="live-dot"></span> CANTON OF ZÜRICH</span>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow"><span class="eyebrow-line"></span> THE FOREST IS FULL OF CLUES</div>
+            <h1>Find the <em>right forest.</em><br />Know when to go.</h1>
+            <p>Explore promising mushroom habitat across the canton of Zürich. Compare forest character, recent rain, soil moisture and season for four species.</p>
+            <a class="primary-link" href="#explore">Explore the map <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="hero-aside"><div class="hero-aside-icon">◉</div><div><strong>Habitat signals, not sightings</strong><span>Scores guide exploration. They do not predict a find or identify a mushroom.</span></div></div>
+          <div class="hero-contours" aria-hidden="true"></div>
+        </section>
+
+        <section class="explore" id="explore">
+          <div class="section-heading"><div><div class="kicker">01 / EXPLORE</div><h2>Where might conditions align?</h2><p>Select a species, then choose a woodland area on the map or in the list.</p></div><div class="date-pill" id="date-pill"></div></div>
+          <div class="explorer-grid">
+            <aside class="sidebar">
+              <div class="sidebar-head"><label for="species">I’m looking for</label><select id="species" aria-label="Mushroom species"><option value="porcini">Porcini · Steinpilz</option><option value="chanterelle">Chanterelle · Eierschwamm</option><option value="horn">Horn of plenty · Totentrompete</option><option value="parasol">Parasol · Riesenschirmling</option></select><div class="species-latin" id="species-latin"></div></div>
+              <div class="sidebar-row"><span>EXPLORE AREAS</span><span id="result-count"></span></div>
+              <div id="site-list" class="site-list" aria-label="Woodland areas"></div>
+            </aside>
+            <div class="map-column">
+              <div class="map-wrap"><div id="map" role="application" aria-label="Navigable map of mushroom habitat areas in the canton of Zürich"></div><div class="map-overlay"><span class="overlay-dot"></span><span id="map-status">Loading conditions…</span></div><button id="reset-view" class="reset-view" type="button" title="Show all areas">⌖ <span>All areas</span></button></div>
+              <div class="map-legend"><span>HABITAT SIGNAL</span><div class="legend-scale"><i class="low"></i> Lower <i class="mid"></i> Moderate <i class="high"></i> Stronger</div><span>Tap a circle to inspect</span></div>
+            </div>
+            <aside class="detail" id="detail" aria-live="polite"></aside>
+          </div>
+          <p class="map-footnote">Area points are approximate exploration anchors, not exact collection spots. Forest descriptions are indicative and should be checked on site. Never collect in a protected area.</p>
+        </section>
+
+        <section class="method" id="method"><div><div class="kicker">02 / THE METHOD</div><h2>A field guide for the<br /><em>curious, not a crystal ball.</em></h2></div><div class="method-copy"><p>The 0–100 score is a <strong>relative habitat signal</strong>, not a calibrated probability. It blends the selected mushroom’s preferred habitat with the season and recent local weather. We show each ingredient so you can judge it yourself.</p><div class="method-steps"><div><span>01</span><strong>Forest character</strong><small>Indicative tree mix and habitat for each area.</small></div><div><span>02</span><strong>Moisture & rain</strong><small>Open-Meteo soil moisture and recent precipitation.</small></div><div><span>03</span><strong>Season & temperature</strong><small>Species season and recent air temperature.</small></div></div><p class="method-note">Weather is modeled at an area scale, so it cannot describe a particular patch of forest. If live weather is unavailable, the score uses habitat and season only and is labelled accordingly.</p></div></section>
+
+        <section class="field-notes" id="field-notes"><div class="field-intro"><div class="kicker">03 / BEFORE YOU GO</div><h2>Forage thoughtfully.</h2><p>In Zürich, the first ten days of every month are a closed season for mushroom collecting. The daily limit is 1 kg per person, and collection is prohibited in nature reserves.</p><a href="https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/gesundheit/lebensmittelkontrollen/MD-00134.pdf" target="_blank" rel="noopener noreferrer">Read the canton’s guidance ↗</a></div><div class="notice-card"><span class="notice-icon">!</span><div><strong id="collecting-title">Check today’s collecting status</strong><p id="collecting-copy"></p><p>Only pick species you can identify with certainty. Have every collection checked by a local <a href="https://www.zh.ch/de/gesundheit/lebensmittel-gebrauchsgegenstaende/lebensmittel/umgang-lebensmittel.html" target="_blank" rel="noopener noreferrer">Pilzkontrollstelle ↗</a> before eating.</p></div></div></section>
+      </main>
+      <footer><span>✳ mycomap zürich</span><span>Made for curious walks in the woods.</span><div><a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener noreferrer">Weather: Open-Meteo</a><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">Map: © OpenStreetMap contributors</a></div></footer>
+    </div>
+  </body>
+</html>
