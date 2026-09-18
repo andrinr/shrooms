@@ -21,7 +21,7 @@ Explore forests by tree composition, moisture, slope, and season. Built with pla
 
 - **Seven species:** porcini, chanterelle, horn of plenty, parasol, bay bolete, wood hedgehog, and saffron milkcap.
 - **Interactive heatmap:** pan, zoom, search municipalities, and inspect the inputs behind every score. Pink highlights stronger relative signals; the legend shows the score thresholds.
-- **4,726 forest cells:** 500 m scores built from official forest surveys and terrain sampled at 50 m.
+- **4,865 forest cells:** 500 m scores built from official forest surveys and terrain sampled at 50 m.
 - **Detailed bundled basemap:** major roads, rivers, and 904 settlement locations, with labels revealed as you zoom. No live map-tile requests.
 - **Visible forest reserves:** hatched boundaries and named popups, with explicit coverage limits.
 - **Weather context:** rainfall, soil moisture, humidity, temperature, sunshine, and a provisional drying adjustment. A dated snapshot ships with the app; live refresh is optional.
@@ -55,7 +55,7 @@ CI also produces a `shrooms-static-site` artifact containing just deployable fil
 | [OpenStreetMap](https://www.openstreetmap.org/copyright) | Roads, rivers, and settlement locations |
 | [Open-Meteo](https://open-meteo.com/en/docs) | Regional weather at 32 locations on a 10 km lattice |
 
-Weather is much coarser than the forest grid. Soil acidity, deadwood, frost damage, and fine-scale microclimate are not modeled. Forest reserves are excluded, but the map does not establish collection permission.
+Weather is much coarser than the forest grid. Soil acidity, deadwood, frost damage, and fine-scale microclimate are not modeled. Forest reserves retain habitat scores under a warning overlay: collecting may be forbidden. The map does not establish collection permission.
 
 **[Model, weights, provenance, and limitations](docs/model-and-data.md)**
 

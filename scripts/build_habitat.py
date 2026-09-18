@@ -71,7 +71,7 @@ land_mask=np.zeros(dimensions,dtype=bool)
 for i,f in enumerate(municipalities):
  if f['properties'].get('gemeindename'): land_mask |= municipal_ids == i+1
 forest_mask=(stand_ids>0)&land_mask
-usable=forest_mask&~reserve_mask
+usable=forest_mask
 projection=Transformer.from_crs(2056,4326,always_xy=True).transform
 cells=[]; weather=[]; weather_lookup={}
 print('Aggregating 500 m cells and forest masks…',flush=True)
@@ -118,6 +118,7 @@ for row in range(0,dimensions[0],10):
   cells.append({'type':'Feature','geometry':geometry,'properties':{
    'id':f'{row}-{col}','name':town,'district':district,'lat':round(lat,5),'lon':round(lon,5),
    'x':round(x),'y':round(y),'forest':round(np.mean(forest_mask[section])*100),
+   'reservePercent':round(float(np.mean(reserve_mask[section][mask])*100),1),
    'area':round(stand_area*2500/10000,2),'canopy':canopy,'canopyKnown':round(canopy_known,2),
    'broadleaf':broadleaf,'conifer':conifer,'beech':beech,'oak':oak,'spruce':spruce,'fir':fir,'pine':pine,
    'treeKnown':round(tree_known,2),'slope':median(slope),'aspect':aspect_mean,'elevation':median(elevation),
@@ -138,14 +139,14 @@ metadata={
  'cellSizeMeters':500,'maskResolutionMeters':50,'terrainResolutionMeters':50,
  'sourceStandCount':source_count,'usedStandCount':len(properties)-1,'cellCount':len(cells),
  'forestAreaKm2':round(float(np.count_nonzero(forest_mask)*0.0025),2),
- 'excludedReserveAreaKm2':round(float(np.count_nonzero(forest_mask&reserve_mask)*0.0025),2),
+ 'mappedReserveForestAreaKm2':round(float(np.count_nonzero(forest_mask&reserve_mask)*0.0025),2),
  'sources':{name:{'url':url,'sha256':source_hash(CACHE/name)} for name,url in SOURCES.items()},
  'credit':'Geografisches Informationssystem des Kantons Zürich (GIS-ZH), Luftbild-Bestandeskarte, Gemeinden, Waldreservate, DTM 2022',
- 'limits':'50 m raster mask; cells under 0.75 ha omitted. Forest reserves excluded conservatively; other protected areas and local restrictions are not comprehensively mapped.'
+ 'limits':'50 m raster mask; cells under 0.75 ha omitted. Forest reserves included in habitat scores; collecting may be forbidden; other protected areas and local restrictions are not comprehensively mapped.'
 }
 result={'metadata':metadata,'weatherPoints':weather,'type':'FeatureCollection','features':cells}
 (ROOT/'data').mkdir(exist_ok=True)
 from pack_habitat import pack
 pack(result)
 (ROOT/'data'/'sources.json').write_text(json.dumps(metadata,ensure_ascii=False,indent=2)+'\n')
-print(f'Wrote {len(cells):,} forest cells, {len(weather)} weather anchors, {metadata["forestAreaKm2"]} km² forest; {metadata["excludedReserveAreaKm2"]} km² reserves excluded.',flush=True)
+print(f'Wrote {len(cells):,} forest cells, {len(weather)} weather anchors, {metadata["forestAreaKm2"]} km² forest; {metadata["mappedReserveForestAreaKm2"]} km² forest in mapped reserves (included).',flush=True)

@@ -4,16 +4,16 @@
 
 ## Where the map comes from
 
-There are **no handpicked “known spots” or mushroom sighting records** in the current model. The original demonstration anchors have been replaced by **4,726 computed forest cells**:
+There are **no handpicked “known spots” or mushroom sighting records** in the current model. The original demonstration anchors have been replaced by **4,865 computed forest cells**:
 
 - **Forest stands:** GIS-ZH [Luftbild-Bestandeskarte](https://geolion.zh.ch/geodatensatz/347), 95,716 source features, including 92,866 forest stands with `flcodelb=10`. Tree composition, canopy coverage and aerial survey years come from those features. Survey years range from 2000 to 2024, with the dates for each cell shown in the interface.
 - **Forest mask:** stand polygons are simplified by 3 m before rasterization at 50 m. Raster cell centers determine coverage. The raster is aggregated into 500 m cells; cells with less than 0.75 ha of eligible forest are omitted. This does not preserve parcel-level boundaries.
 - **Terrain:** GIS-ZH [DTM 2022](https://geolion.zh.ch/geodatenservice/1379), requested at 50 m using bilinear resampling. Slope is calculated from the elevation gradient. Each forest cell uses the median slope and elevation, and the circular mean aspect.
 - **Boundaries:** official GIS-ZH municipality polygons restrict the mask to canton territory and provide municipality names.
-- **Reserves:** the GIS-ZH forest reserve layer is excluded conservatively: about 41.91 km² of mapped forest. This does **not** cover every nature reserve or local restriction, and does not establish collection permission.
+- **Reserves:** the GIS-ZH forest reserve layer is overlaid with transparent hatching and a warning that collecting may be forbidden. Its approximately 41.91 km² of mapped forest remain included in habitat scoring. This does **not** cover every nature reserve or local restriction, and does not establish collection permission.
 - **Weather:** the [Open-Meteo forecast API](https://open-meteo.com/en/docs), requested in two batches for 32 anchors on a 10 km lattice. Each forest cell uses the nearest lattice anchor. Weather resolution is much coarser than the forest grid.
 
-The habitat dataset is 979 KB total: a 326 KB index plus 95 spatial chunks of at most 24 KB each. Geometry chunks load when their bounds intersect the viewport and are reused when revisited; the whole-canton view needs all chunks. Data are losslessly gzip-compressed inside base64 script envelopes, so GitHub Pages needs no custom headers and direct file previews avoid fetch/CORS restrictions. A current browser with `DecompressionStream` is required. Exact source requests, retrieval/build metadata and raw-source hashes are in [`data/sources.json`](../data/sources.json). GIS attribution remains visible on the map and in the source cards.
+The habitat dataset is approximately 1 MB total: an approximately 340 KB index plus 95 spatial chunks of at most 24 KB each. Geometry chunks load when their bounds intersect the viewport and are reused when revisited; the whole-canton view needs all chunks. Data are losslessly gzip-compressed inside base64 script envelopes, so GitHub Pages needs no custom headers and direct file previews avoid fetch/CORS restrictions. A current browser with `DecompressionStream` is required. Exact source requests, retrieval/build metadata and raw-source hashes are in [`data/sources.json`](../data/sources.json). GIS attribution remains visible on the map and in the source cards.
 
 ## What the number means
 
@@ -70,4 +70,4 @@ References: [Open-Meteo variable definitions](https://open-meteo.com/en/docs), [
 
 The map explicitly marks GIS-ZH forest reserves with brown boundaries and diagonal hatching, above both habitat and forest-type colors. Clicking a reserve shows its name and source identifier. The legend identifies the coverage as **forest reserves only**; unmarked areas can have other protections or local restrictions. Loading failures display an explicit warning and retry button.
 
-`data/protected.js` contains 594 reserve groups from the same 1,814 source polygons used for the habitat exclusion mask. Geometry is clipped to the canton and simplified by 5 m for display. Habitat exclusion still uses the existing 50 m raster, so display boundaries and score-mask edges can differ slightly. Source hash and coverage metadata are included in the compressed asset.
+`data/protected.js` contains 594 reserve groups from 1,814 source polygons. Geometry is clipped to the canton and simplified by 5 m for display. Forest habitat remains scored inside these boundaries. The overlay signals possible collecting restrictions; it does not assert a ban for every reserve. Source hash and coverage metadata are included in the compressed asset.

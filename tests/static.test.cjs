@@ -85,6 +85,10 @@ test('basemap is bundled, geographically bounded, and has no external SVG resour
 
 test('protected forest reserve overlay loads with named polygons and source provenance',async()=>{
  const {load}=loader();const reserves=await load('protected');
+ const index=await load('index');
+ assert.ok(index.cells.some(c=>c.reservePercent===100),'Forest fully inside reserves retains habitat scores');
+ const includedReserveArea=index.cells.reduce((sum,c)=>sum+c.area*c.reservePercent/100/100,0);
+ assert.ok(includedReserveArea/index.metadata.mappedReserveForestAreaKm2>0.99,'Mapped reserve forest remains in scored cells, allowing for small omitted cells');
  assert.equal(reserves.features.length,reserves.metadata.reserveCount);
  assert.ok(reserves.features.length>500);
  assert.equal(reserves.metadata.sourceSha256,JSON.parse(fs.readFileSync('data/sources.json','utf8')).sources['reserves.json'].sha256);
