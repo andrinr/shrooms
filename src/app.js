@@ -71,8 +71,9 @@
   function renderDetail() {
     const c=byId.get(state.selected).properties, result=scored(c), w=state.weather.get(c.weather), s=species[state.species];
     const aspect=known(c.aspect)?['N','NE','E','SE','S','SW','W','NW'][Math.round(c.aspect/45)%8]:'unknown';
+    const sunCopy=w?`${number(w.sunHours7,' h sunshine / 7 days',1)} · ${number(w.et014,' mm reference evaporation / 14 days',1)}`:'Sunshine and drying data unavailable';
     const weatherCopy=w?`${number(w.rain14,' mm',1)} / 14 days · ${number(w.humidity,'% RH')} · ${number(w.soil,' m³/m³',2)} soil water`:'Weather unavailable; this factor is omitted.';
-    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${c.area} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div><div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.host?`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`:`${c.forest}% forest coverage in this 500 m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of 500 m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>new Intl.DateTimeFormat('en',{month:'short'}).format(new Date(2024,m-1))).join(' · '),result.factors.season)}<div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest survey ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · DTM 2022. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>500 m score, clipped to a 50 m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
+    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${c.area} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div><div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% pine')} · mapped host tree`:s.host?`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`:`${c.forest}% forest coverage in this 500 m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of 500 m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>new Intl.DateTimeFormat('en',{month:'short'}).format(new Date(2024,m-1))).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Modeled regional sunshine, not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div><div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest survey ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · DTM 2022. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>500 m score, clipped to a 50 m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
   }
   function render() {
     $('species-latin').textContent=`${species[state.species].latin} · ${species[state.species].note}`;
@@ -144,13 +145,13 @@
     }catch{state.status='offline';}
     // A fresher manually refreshed cache wins over the bundled snapshot.
     try{
-      const cached=JSON.parse(localStorage.getItem('shrooms-weather-v2'));
+      const cached=JSON.parse(localStorage.getItem('shrooms-weather-v3'));
       if(cached?.day===todayKey&&window.SHROOMS_WEATHER.usable(cached,data.weatherPoints,today)&&Date.now()-cached.at<3600000){state.weather=new Map(cached.entries);state.status='cached';}
     }catch{}
     recompute();
   }
   async function loadWeather(force=false) {
-    const cacheKey='shrooms-weather-v2';
+    const cacheKey='shrooms-weather-v3';
     const gridKey=data.weatherPoints.map(point=>point.id).join('|');
     if(!force)try{
       const cached=JSON.parse(localStorage.getItem(cacheKey));
@@ -162,7 +163,7 @@
     state.status='loading';render();
     for(let start=0;start<data.weatherPoints.length;start+=16){
       const points=data.weatherPoints.slice(start,start+16);
-      const params=new URLSearchParams({latitude:points.map(p=>p.lat).join(','),longitude:points.map(p=>p.lon).join(','),daily:'precipitation_sum,temperature_2m_mean',hourly:'soil_moisture_3_to_9cm,relative_humidity_2m',past_days:'14',forecast_days:'1',timezone:'Europe/Zurich'});
+      const params=new URLSearchParams({latitude:points.map(p=>p.lat).join(','),longitude:points.map(p=>p.lon).join(','),daily:'precipitation_sum,temperature_2m_mean,sunshine_duration,et0_fao_evapotranspiration',hourly:'soil_moisture_3_to_9cm,relative_humidity_2m',past_days:'14',forecast_days:'1',timezone:'Europe/Zurich'});
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
       try{
         const response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`,{signal:controller.signal});
@@ -178,6 +179,7 @@
     if(state.status==='live')try{localStorage.setItem(cacheKey,JSON.stringify({day:todayKey,grid:gridKey,at:Date.now(),entries:[...state.weather]}));}catch{}
     recompute();
   }
+  $('species').innerHTML=Object.entries(species).map(([id,s])=>`<option value="${id}">${escape(s.name)} · ${escape(s.local)}</option>`).join('');
   $('species').addEventListener('change',event=>{state.species=event.target.value;recompute();});
   $('place-search').addEventListener('input',event=>{state.search=event.target.value.trim();renderList();});
   $('heatmap-mode').addEventListener('click',()=>mapMode('heat'));

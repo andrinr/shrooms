@@ -40,7 +40,7 @@ test('browser loader decompresses index, every region, and weather without netwo
  assert.ok(Number.isFinite(weather.at));
  weather.entries.forEach(([id,w],i)=>{
   assert.equal(id,i);
-  for(const key of ['rain14','temp7','soil','humidity'])assert.ok(Number.isFinite(w[key]),key);
+  for(const key of ['rain14','temp7','soil','humidity','sunHours7','et014'])assert.ok(Number.isFinite(w[key]),key);
  });
  // Historical snapshots remain valid artifacts; freshness is a runtime concern.
  assert.equal(await load('index'),index);

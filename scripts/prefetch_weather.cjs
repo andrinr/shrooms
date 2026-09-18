@@ -8,7 +8,7 @@ const day=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeri
  const entries=[];
  for(let start=0;start<data.weatherPoints.length;start+=16){
   const points=data.weatherPoints.slice(start,start+16);
-  const params=new URLSearchParams({latitude:points.map(p=>p.lat).join(','),longitude:points.map(p=>p.lon).join(','),daily:'precipitation_sum,temperature_2m_mean',hourly:'soil_moisture_3_to_9cm,relative_humidity_2m',past_days:'14',forecast_days:'1',timezone:'Europe/Zurich'});
+  const params=new URLSearchParams({latitude:points.map(p=>p.lat).join(','),longitude:points.map(p=>p.lon).join(','),daily:'precipitation_sum,temperature_2m_mean,sunshine_duration,et0_fao_evapotranspiration',hourly:'soil_moisture_3_to_9cm,relative_humidity_2m',past_days:'14',forecast_days:'1',timezone:'Europe/Zurich'});
   const response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`,{signal:AbortSignal.timeout(60000)});
   if(!response.ok)throw new Error(`Open-Meteo ${response.status}`);
   const body=await response.json(),items=Array.isArray(body)?body:[body];

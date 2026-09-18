@@ -29,7 +29,7 @@ The 0–100 **modeled suitability** score is an unvalidated ecological heuristic
 | --- | ---: | --- |
 | Tree partners | 20% | Mapped beech, oak, other broadleaf and conifer shares; forest-coverage edge proxy for Parasol |
 | Canopy | 10% | Mapped canopy percentage; species-specific open/closed preference |
-| Moisture | 35% | Soil water 50%, 14-day rain 30%, recent relative humidity 20% |
+| Moisture | 35% | Soil water 50%, 14-day rain adjusted for drying 30%, recent relative humidity 20% |
 | Temperature | 15% | 7-day mean temperature against a provisional species range |
 | Terrain | 10% | Slope and aspect as a modest moisture-retention proxy |
 | Season | 10% | Provisional species fruiting months |
@@ -110,3 +110,13 @@ Both basemap files are bundled into the CI artifact automatically.
 ## Heatmap contrast
 
 Colors adapt to the selected species’ scores across the entire canton: the 10th percentile is the low color endpoint and the 95th percentile is the high endpoint. Scores outside that interval clamp to the endpoint colors. Pink highlights the strongest relative signals, while weaker cells are more transparent. The legend displays the actual score thresholds. Endpoints stay fixed while panning and update when species or weather changes. A minimum 10-point span prevents tiny differences from being stretched across the entire palette. Numeric suitability scores are unchanged; these colors do not indicate calibrated probabilities or guarantee good conditions.
+
+## More species, sunshine, and drying
+
+Seven species are available, including bay bolete (Maronenröhrling), wood hedgehog (Semmelstoppelpilz), and saffron milkcap (Echter Reizker). Saffron milkcap uses mapped pine percentage; an unknown pine value is omitted, while a measured zero is a weak host signal. Profiles, month ranges, temperature bands, and response coefficients remain provisional assumptions, not fitted Zürich observations.
+
+The weather snapshot and live refresh now include seven-day sunshine hours and fourteen-day reference evapotranspiration (ET₀). Sunshine is displayed as regional context, not as measured light below the canopy. The rainfall component uses `max(0, rain14 − 0.5 × ET₀14)` before its existing response curve. The 0.5 coefficient is a deliberately modest, unvalidated drying assumption. ET₀ describes a reference grass surface, not actual forest evaporation. No extra independent sun weight is added; canopy and aspect already represent shelter. Missing ET₀ preserves the previous rain-only calculation. All new aggregates require complete past days and exclude today and future forecasts.
+
+Other potentially useful inputs—soil pH, substrate/deadwood, frost damage, and fine-scale terrain shading—remain outside the score until suitable data and response functions are available.
+
+References: [Open-Meteo variable definitions](https://open-meteo.com/en/docs), [WSL fungal ecology research](https://www.wsl.ch/en/biodiversity/species-diversity/fungi/), [wood hedgehog habitat](https://www.first-nature.com/fungi/hydnum-repandum.php), [saffron milkcap habitat](https://www.first-nature.com/fungi/lactarius-deliciosus.php), and [NDFF bay bolete habitat observations](https://www.verspreidingsatlas.nl/biodiversiteit/habitat-distribution.aspx?soortnummer=10142020).

@@ -15,6 +15,7 @@
       const total = cell.conifer + cell.broadleaf;
       if (total > 0) tree = (beech*species.host.beech + oak*species.host.oak + cell.conifer*species.host.conifer + other*species.host.other)/total;
     }
+    if(species.requiredTree) tree=cell.treeKnown>=.5 && known(cell[species.requiredTree]) ? clamp(cell[species.requiredTree]/100) : null;
     const canopy = known(cell.canopy) && cell.canopyKnown >= .5
       ? species.canopy === 'open' ? clamp(1-cell.canopy/120,.1,1) : clamp(cell.canopy/85,.1,1)
       : null;
@@ -22,7 +23,9 @@
     if (weather) {
       const inputs=[];
       if (known(weather.soil)) inputs.push([clamp((weather.soil-.12)/.24),.5]);
-      if (known(weather.rain14)) inputs.push([clamp(weather.rain14/60) * (weather.rain14>150 ? clamp(1-(weather.rain14-150)/200,.3,1) : 1),.3]);
+      // Reference evaporation is an atmospheric drying proxy, not forest water loss.
+      const rainSupply=known(weather.et014)?Math.max(0,weather.rain14-.5*weather.et014):weather.rain14;
+      if (known(weather.rain14)) inputs.push([clamp(rainSupply/60) * (weather.rain14>150 ? clamp(1-(weather.rain14-150)/200,.3,1) : 1),.3]);
       if (known(weather.humidity)) inputs.push([clamp((weather.humidity-45)/45),.2]);
       if (inputs.length) moisture=inputs.reduce((sum,[value,weight])=>sum+value*weight,0)/inputs.reduce((sum,[,weight])=>sum+weight,0);
       if (known(weather.temp7)) {

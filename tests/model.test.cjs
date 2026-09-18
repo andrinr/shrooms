@@ -69,3 +69,24 @@ test('compressed assets retain all source geometry and fit small chunks',()=>{
  assert.equal(new Set(data.features.map(f=>f.properties.id)).size,data.cells.length);
  for(const tile of data.tiles)assert.ok(tile.bytes<30000);
 });
+
+test('saffron milkcap distinguishes pine from other conifers and omits unknown pine',()=>{
+ const pine=model.score({...cell,pine:70},species.saffron,wet,autumn);
+ const spruce=model.score({...cell,pine:0},species.saffron,wet,autumn);
+ assert.ok(pine.value>spruce.value+20);
+ assert.equal(model.score({...cell,pine:null},species.saffron,wet,autumn).factors.tree.value,null);
+});
+test('reference evaporation lowers moisture while missing evaporation preserves rain-only behavior',()=>{
+ const low=model.score(cell,species.porcini,{...wet,et014:0},autumn);
+ const high=model.score(cell,species.porcini,{...wet,et014:60},autumn);
+ assert.ok(low.factors.moisture.value>high.factors.moisture.value);
+ assert.equal(low.value,model.score(cell,species.porcini,wet,autumn).value);
+});
+test('sunshine and evaporation use complete past days and convert seconds to hours',()=>{
+ const time=Array.from({length:15},(_,i)=>`2026-09-${String(i+4).padStart(2,'0')}`);
+ const daily={time,sunshine_duration:time.map((_,i)=>i<14?3600:999999),et0_fao_evapotranspiration:time.map((_,i)=>i<14?2:999)};
+ const parsed=weather.parse({daily},'2026-09-18');
+ assert.equal(parsed.sunHours7,7);assert.equal(parsed.et014,28);
+ daily.sunshine_duration[13]=null;daily.et0_fao_evapotranspiration[0]=null;
+ assert.equal(weather.parse({daily},'2026-09-18'),null);
+});
