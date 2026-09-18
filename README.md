@@ -1,3 +1,5 @@
+![shrooms — Follow the fungi. Colorful mushrooms and orbital patterns from the homepage banner.](docs/media/banner.png)
+
 # shrooms ✳
 
 **Follow the fungi.** A mushroom habitat explorer for the **canton of Zürich**.
