@@ -17,6 +17,7 @@
   <script defer src="./src/scoring.js"></script>
   <script defer src="./src/weather.js"></script>
   <script defer src="./src/heatmap.js"></script>
+  <script defer src="./src/adaptive.js"></script>
   <script defer src="./src/app.js"></script>
 </head>
 <body>
@@ -34,7 +35,7 @@
     </section>
     <div class="data-ribbon"><span><b id="dataset-count">4,726</b> forest cells</span><span>Official GIS-ZH forest & terrain data</span><span>Open-Meteo moisture & weather</span><span>✳ Zürich canton, Switzerland</span></div>
     <section class="explore" id="explore">
-      <div class="section-heading"><div><div class="kicker">01 / READ THE FOREST</div><h2>Where the conditions come together.</h2><p>Choose a mushroom. Explore the heatmap. Click any colored forest patch to see its evidence.</p></div><div class="date-pill" id="date-pill"></div></div>
+      <div class="section-heading"><div><div class="kicker">01 / READ THE FOREST</div><h2>Where the conditions come together.</h2><p>Choose a mushroom. Zoom from regional summaries into 100-metre forest detail. Click a forest patch to see its evidence.</p></div><div class="date-pill" id="date-pill"></div></div>
       <div class="explorer-grid">
         <aside class="sidebar">
           <div class="sidebar-head"><label for="species">On your radar</label><select id="species" aria-label="Mushroom species"><option value="porcini">Porcini · Steinpilz</option><option value="chanterelle">Chanterelle · Eierschwamm</option><option value="horn">Horn of plenty · Totentrompete</option><option value="parasol">Parasol · Riesenschirmling</option></select><div class="species-latin" id="species-latin"></div><label class="search-label" for="place-search">Find a municipality</label><input id="place-search" type="search" placeholder="e.g. Winterthur" autocomplete="off" /></div>

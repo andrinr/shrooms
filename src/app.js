@@ -7,6 +7,7 @@
   const cells=data.cells;
   const byId=new Map(cells.map(c=>[c.id,{type:"Feature",properties:c}]));
   const loadedTiles=new Set();
+  const overviewGroups=new Map([500,1000].map(size=>[size,window.SHROOMS_ADAPTIVE.group(cells,size)]));
   const state={species:'porcini',selected:null,map:null,layer:null,selection:null,mode:'heat',weather:new Map(),scores:new Map(),status:'loading',search:'',updated:null};
   const today=new Date();
   const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(today).map(p=>[p.type,p.value]));
@@ -32,7 +33,7 @@
     $('heat-high').textContent=`≥ ${heatScale.high} / 100`;
     if (!state.selected) state.selected=[...cells].sort((a,b)=>scored(b).value-scored(a).value)[0].id;
     state.layer?.setStyle(feature=>cellStyle(feature));
-    render();
+    render();updateResolution();
   }
   function cellStyle(feature) {
     return {stroke:false,fillColor:state.mode==='heat'?scoreColor(scored(feature.properties).value):treeColor(feature.properties),fillOpacity:state.mode==='heat'?.35+.6*heatScale.normalize(scored(feature.properties).value)/100:.68};
@@ -87,7 +88,7 @@
     $('heatmap-mode').setAttribute('aria-pressed',String(mode==='heat'));
     $('points-mode').setAttribute('aria-pressed',String(mode==='forest'));
     $('map-legend').classList.toggle('heat-active',mode==='heat');
-    state.layer?.setStyle(cellStyle);
+    state.layer?.setStyle(cellStyle);updateResolution();
   }
   function initMap() {
     if(!window.L){$('map').innerHTML='<div class="map-error">The map could not load. Reload to try again.</div>';return;}
@@ -123,7 +124,27 @@
     const bounds=L.latLngBounds(data.tiles.flatMap(t=>t.bounds));
     const all=()=>state.map.fitBounds(bounds,{padding:[20,20]});
     $('reset-view').addEventListener('click',()=>{state.search='';$('place-search').value='';all();});
-    state.map.on('moveend',()=>{renderList();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
+    state.overview=L.layerGroup();
+    state.map.on('moveend',()=>{renderList();updateResolution();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
+  }
+  function updateResolution() {
+    if(!state.map||!state.overview)return;
+    const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
+    document.querySelector('.heatmap-caption').textContent=size===100?'Offline basemap · 100 m forest scores':`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for 100 m detail`;
+    state.overview.clearLayers();
+    if(size===100){
+      state.map.removeLayer(state.overview);state.layer.addTo(state.map);
+      return;
+    }
+    state.map.removeLayer(state.layer);state.overview.addTo(state.map);
+    for(const group of overviewGroups.get(size)){
+      const summary=window.SHROOMS_ADAPTIVE.summarize(group,state.scores);
+      const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
+      L.circleMarker([summary.lat,summary.lon],{radius:size===1000?5:4,stroke:false,fillColor:color,fillOpacity:.9})
+        .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to zoom`,{sticky:true})
+        .on('click',()=>state.map.setView([summary.lat,summary.lon],size===1000?12:14))
+        .addTo(state.overview);
+    }
   }
   async function loadProtected() {
     if(!state.map)return;
@@ -163,12 +184,13 @@
     state.layer?.addData(features);
   }
   async function loadVisibleTiles() {
+    if(window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom())!==100){$('geometry-status').hidden=true;return;}
     const tiles=data.tiles.filter(t=>state.map.getBounds().intersects(L.latLngBounds(t.bounds))&&!loadedTiles.has(t.key));
     let failed=false;
     // Bound simultaneous downloads and decompression work.
     let next=0;
     await Promise.all(Array.from({length:4},async()=>{
-      while(next<tiles.length){const tile=tiles[next++];try{await loadTile(tile.key);}catch{failed=true;}}
+      while(next<tiles.length&&window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom())===100){const tile=tiles[next++];try{await loadTile(tile.key);}catch{failed=true;}}
     }));
     $('geometry-status').hidden=!failed;
   }

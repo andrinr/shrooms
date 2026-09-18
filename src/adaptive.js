@@ -1,0 +1,21 @@
+/* Area-weighted display summaries; the underlying model stays at 100 m. */
+(function () {
+  const resolution=zoom=>zoom<=10?1000:zoom<=12?500:100;
+  function group(cells,meters){
+    const groups=new Map(),step=meters/50;
+    for(const cell of cells){
+      const [row,col]=cell.id.split('-').map(Number);
+      const key=`${Math.floor(row/step)}-${Math.floor(col/step)}`;
+      if(!groups.has(key))groups.set(key,[]);
+      groups.get(key).push(cell);
+    }
+    return [...groups.values()];
+  }
+  function summarize(cells,scores){
+    const area=cells.reduce((sum,c)=>sum+c.area,0);
+    const mean=fn=>cells.reduce((sum,c)=>sum+fn(c)*c.area,0)/area;
+    return {lat:mean(c=>c.lat),lon:mean(c=>c.lon),value:mean(c=>scores.get(c.id).value),
+      treeKnown:mean(c=>c.treeKnown),conifer:mean(c=>c.conifer||0),broadleaf:mean(c=>c.broadleaf||0),count:cells.length};
+  }
+  window.SHROOMS_ADAPTIVE={resolution,group,summarize};
+})();
