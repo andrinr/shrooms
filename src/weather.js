@@ -30,5 +30,21 @@
       Array.isArray(snapshot.entries) && snapshot.entries.length===points.length &&
       snapshot.entries.every(([id,w],i)=>id===i && w && Object.values(w).some(known));
   }
-  window.SHROOMS_WEATHER={parse,usable};
+  // Inverse-distance interpolation of regional inputs, not fine-scale measurements.
+  function interpolate(cell,points,entries){
+    const totals={},weights={};
+    points.forEach((point,i)=>{
+      const w=entries.get(i);if(!w)return;
+      const [x,y]=point.id.split(':').map(Number);
+      const distance2=(cell.x-x)**2+(cell.y-y)**2;
+      const weight=1/Math.max(1,distance2);
+      for(const key of ['rain14','temp7','soil','humidity','sunHours7','et014']){
+        if(!known(w[key]))continue;
+        totals[key]=(totals[key]||0)+w[key]*weight;weights[key]=(weights[key]||0)+weight;
+      }
+    });
+    if(!Object.keys(weights).length)return undefined;
+    return Object.fromEntries(['rain14','temp7','soil','humidity','sunHours7','et014'].map(key=>[key,weights[key]?totals[key]/weights[key]:null]));
+  }
+  window.SHROOMS_WEATHER={parse,usable,interpolate};
 })();

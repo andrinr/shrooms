@@ -91,3 +91,14 @@ test('sunshine and evaporation use complete past days and convert seconds to hou
  daily.sunshine_duration[13]=null;daily.et0_fao_evapotranspiration[0]=null;
  assert.equal(weather.parse({daily},'2026-09-18'),null);
 });
+
+test('regional weather interpolation removes nearest-anchor steps and omits missing inputs',()=>{
+ const points=[{id:'0:0'},{id:'10000:0'}];
+ const entries=new Map([[0,{rain14:10,soil:.2}],[1,{rain14:50,soil:null}]]);
+ const middle=weather.interpolate({x:5000,y:0},points,entries);
+ assert.equal(middle.rain14,30);assert.equal(middle.soil,.2);assert.equal(middle.temp7,null);
+ const left=weather.interpolate({x:4999,y:0},points,entries),right=weather.interpolate({x:5001,y:0},points,entries);
+ assert.ok(Math.abs(left.rain14-right.rain14)<.1);
+ assert.ok(Math.abs(weather.interpolate({x:0,y:0},points,entries).rain14-10)<.001);
+ assert.equal(weather.interpolate({x:0,y:0},points,new Map()),undefined);
+});
