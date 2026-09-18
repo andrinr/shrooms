@@ -1,0 +1,7 @@
+[out:json][timeout:90];
+(
+ way[highway~"^(motorway|trunk|primary|secondary|tertiary)$"](47.15,8.3,47.71,8.99);
+ way[waterway="river"](47.15,8.3,47.71,8.99);
+ node[place~"^(city|town|village|hamlet)$"][name](47.15,8.3,47.71,8.99);
+);
+out geom;

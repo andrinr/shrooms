@@ -95,15 +95,19 @@ Serve `_site/` to preview the packaged version. No dependency installation, secr
 
 ## Bundled basemap
 
-`data/basemap.svg` is a roughly 251 KB vector map derived from the cached GIS-ZH municipality layer. Its Web Mercator projection aligns with the interactive forest overlay. It includes municipality boundaries and lake areas classified separately in that source, plus municipality labels from `data/basemap.js`. Labels indicate municipality areas rather than surveyed town centers. Smaller municipality labels appear when zoomed in.
+`data/basemap.svg` is a bundled vector map combining GIS-ZH municipality and lake boundaries with OpenStreetMap motorways, primary/secondary/tertiary roads, rivers, and settlement locations. All geometry is clipped to canton territory and projected to Web Mercator so it aligns with the forest overlay. Roads use 15 m simplification; boundary polygons use 35 m simplification.
 
-No third-party map tiles are requested, including when previewing `index.html` directly. Zoom, pan, cell selection, and species heatmaps remain interactive. This simplified canton map omits streets, trails, and lakes contained within municipal polygons; the external “Explore this forest” link opens a detailed OpenStreetMap view.
+Place labels use mapped settlement points rather than municipality centroids. Cities and towns appear first; villages and hamlets appear at closer zoom levels, with overlap filtering. Streets, paths, routing, and complete water-body coverage are outside this overview map.
+
+No third-party map tiles are requested. The source download happens only during preparation, using the reproducible query in `scripts/basemap.overpass`. The deployed site remains fully static. OSM data attribution and the ODbL license are linked on the map; metadata records retrieval time, the server’s base-version value, checksum and road counts.
 
 Rebuild after refreshing the cached municipality data:
 
 ```sh
-.venv/bin/python scripts/build_basemap.py
+.venv/bin/python scripts/build_basemap.py --download
 ```
+
+Omit `--download` to reuse `.cache/basemap-osm.json`. OSM-derived place data are provided under [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/); the bundled SVG includes © OpenStreetMap contributors data. Source extraction and rendering steps are supplied in this repository.
 
 Both basemap files are bundled into the CI artifact automatically.
 

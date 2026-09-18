@@ -73,6 +73,10 @@ test('basemap is bundled, geographically bounded, and has no external SVG resour
  const [[south,west],[north,east]]=base.bounds;
  assert.ok(south<north&&west<east);
  assert.ok(base.labels.length>150);
+ assert.ok(base.roadSegments.motorway>50);
+ assert.ok(base.roadSegments.primary>50);
+ assert.ok(base.labels.every(p=>Number.isFinite(p.minZoom)));
+ assert.equal(base.osmLicense,'ODbL-1.0');
  for(const label of base.labels)assert.ok(label.lat>=south&&label.lat<=north&&label.lon>=west&&label.lon<=east);
  const svg=fs.readFileSync('data/basemap.svg','utf8');
  assert.match(svg,/<svg /);assert.doesNotMatch(svg,/<script|<image|(?:href|src)=|url\(/i);

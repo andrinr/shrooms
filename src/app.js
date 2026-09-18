@@ -94,17 +94,23 @@
     state.map=L.map('map',{zoomControl:false,preferCanvas:true}).setView([47.43,8.65],10);
     const base=window.SHROOMS_BASEMAP;
     if(base){
-      L.imageOverlay('./data/basemap.svg',base.bounds,{interactive:false,attribution:'Basemap, forest & terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a>'}).addTo(state.map);
+      L.imageOverlay('./data/basemap.svg',base.bounds,{interactive:false,attribution:'Basemap, forest & terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(state.map);
       state.map.createPane('placeLabels');
       state.map.getPane('placeLabels').style.pointerEvents='none';
       const labels=L.layerGroup().addTo(state.map);
       const updateLabels=()=>{
         labels.clearLayers();
-        base.labels.filter(p=>p.major||state.map.getZoom()>=12).forEach(p=>{
-          L.marker([p.lat,p.lon],{pane:'placeLabels',interactive:false,icon:L.divIcon({className:'place-label',html:`<span>${escape(p.name)}</span>`,iconSize:[0,0]})}).addTo(labels);
+        const occupied=[];
+        base.labels.filter(p=>p.minZoom<=state.map.getZoom()&&state.map.getBounds().contains([p.lat,p.lon])).forEach(p=>{
+          const point=state.map.latLngToContainerPoint([p.lat,p.lon]);
+          const width=Math.min(170,p.name.length*6+14),height=24;
+          const box={x:point.x-width/2,y:point.y-height/2,width,height};
+          if(occupied.some(b=>box.x<b.x+b.width&&box.x+box.width>b.x&&box.y<b.y+b.height&&box.y+box.height>b.y))return;
+          occupied.push(box);
+          L.marker([p.lat,p.lon],{pane:'placeLabels',interactive:false,keyboard:false,icon:L.divIcon({className:`place-label place-${p.kind}`,html:`<span>${escape(p.name)}</span>`,iconSize:[0,0]})}).addTo(labels);
         });
       };
-      state.map.on('zoomend',updateLabels);updateLabels();
+      state.map.on('moveend',updateLabels);updateLabels();
       state.map.setMaxBounds(L.latLngBounds(base.bounds).pad(.15));
       state.map.setMinZoom(8);state.map.setMaxZoom(16);
     }

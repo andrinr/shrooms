@@ -9,3 +9,5 @@
 #map{background:#e3dce7}.place-label span{display:block;transform:translate(-50%,-50%);width:max-content;max-width:150px;text-align:center;font:600 11px/1.15 system-ui,sans-serif;color:#554760;text-shadow:0 1px 2px #fff,1px 0 2px #fff,-1px 0 2px #fff;pointer-events:none}
 
 .heat-legend{flex-direction:column;align-items:flex-end;gap:5px}.heat-legend>div{display:flex;align-items:center;gap:8px}.heat-legend small{font-size:9px;font-weight:400;color:#75667d;letter-spacing:0}.map-legend{gap:10px;flex-wrap:wrap}
+
+.place-city span{font-size:13px;font-weight:800}.place-town span{font-weight:700}.place-hamlet span{font-size:10px;font-weight:400;color:#716777}
