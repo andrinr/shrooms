@@ -4,16 +4,16 @@
 
 ## Where the map comes from
 
-There are **no handpicked “known spots” or mushroom sighting records** in the current model. The original demonstration anchors have been replaced by **4,865 computed forest cells**:
+There are **no handpicked “known spots” or mushroom sighting records** in the current model. The original demonstration anchors have been replaced by **64,500 computed forest cells**:
 
 - **Forest stands:** GIS-ZH [Luftbild-Bestandeskarte](https://geolion.zh.ch/geodatensatz/347), 95,716 source features, including 92,866 forest stands with `flcodelb=10`. Tree composition, canopy coverage and aerial survey years come from those features. Survey years range from 2000 to 2024, with the dates for each cell shown in the interface.
-- **Forest mask:** stand polygons are simplified by 3 m before rasterization at 50 m. Raster cell centers determine coverage. The raster is aggregated into 500 m cells; cells with less than 0.75 ha of eligible forest are omitted. This does not preserve parcel-level boundaries.
+- **Forest mask:** stand polygons are simplified by 3 m before rasterization at 50 m. Raster cell centers determine coverage. The raster is aggregated into 100 m cells; cells with at least one 50 m forest sample (0.25 ha) are retained. Each 100 m cell uses one to four 50 m samples. This adds local forest and terrain detail, but does not preserve parcel-level boundaries or create finer weather measurements.
 - **Terrain:** GIS-ZH [DTM 2022](https://geolion.zh.ch/geodatenservice/1379), requested at 50 m using bilinear resampling. Slope is calculated from the elevation gradient. Each forest cell uses the median slope and elevation, and the circular mean aspect.
 - **Boundaries:** official GIS-ZH municipality polygons restrict the mask to canton territory and provide municipality names.
 - **Reserves:** the GIS-ZH forest reserve layer is overlaid with transparent hatching and a warning that collecting may be forbidden. Its approximately 41.91 km² of mapped forest remain included in habitat scoring. This does **not** cover every nature reserve or local restriction, and does not establish collection permission.
 - **Weather:** the [Open-Meteo forecast API](https://open-meteo.com/en/docs), requested in two batches for 32 anchors on a 10 km lattice. Each forest cell uses the nearest lattice anchor. Weather resolution is much coarser than the forest grid.
 
-The habitat dataset is approximately 1 MB total: an approximately 340 KB index plus 95 spatial chunks of at most 24 KB each. Geometry chunks load when their bounds intersect the viewport and are reused when revisited; the whole-canton view needs all chunks. Data are losslessly gzip-compressed inside base64 script envelopes, so GitHub Pages needs no custom headers and direct file previews avoid fetch/CORS restrictions. A current browser with `DecompressionStream` is required. Exact source requests, retrieval/build metadata and raw-source hashes are in [`data/sources.json`](../data/sources.json). GIS attribution remains visible on the map and in the source cards.
+The habitat dataset is approximately 5 MB total: a 3.1 MB index plus 493 spatial chunks of at most 10 KB each. Geometry chunks load when their bounds intersect the viewport and are reused when revisited; the whole-canton view needs all chunks. Data are losslessly gzip-compressed inside base64 script envelopes, so GitHub Pages needs no custom headers and direct file previews avoid fetch/CORS restrictions. A current browser with `DecompressionStream` is required. Exact source requests, retrieval/build metadata and raw-source hashes are in [`data/sources.json`](../data/sources.json). GIS attribution remains visible on the map and in the source cards.
 
 ## What the number means
 

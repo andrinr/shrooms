@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-18T15:01:55.049463+00:00",
-  "cellSizeMeters": 500,
+  "generated": "2026-09-18T15:05:48.624625+00:00",
+  "cellSizeMeters": 100,
   "maskResolutionMeters": 50,
   "terrainResolutionMeters": 50,
   "sourceStandCount": 95716,
   "usedStandCount": 92866,
-  "cellCount": 4865,
+  "cellCount": 64500,
   "forestAreaKm2": 494.17,
   "mappedReserveForestAreaKm2": 41.91,
   "sources": {
@@ -27,5 +27,5 @@
     }
   },
   "credit": "Geografisches Informationssystem des Kantons Zürich (GIS-ZH), Luftbild-Bestandeskarte, Gemeinden, Waldreservate, DTM 2022",
-  "limits": "50 m raster mask; cells under 0.75 ha omitted. Forest reserves included in habitat scores; collecting may be forbidden; other protected areas and local restrictions are not comprehensively mapped."
+  "limits": "50 m raster mask; cells with no 50 m forest sample omitted. Forest reserves included in habitat scores; collecting may be forbidden; other protected areas and local restrictions are not comprehensively mapped."
 }

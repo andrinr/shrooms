@@ -1,4 +1,4 @@
-"""Losslessly pack habitat properties and 5 km geometry chunks for static hosting."""
+"""Losslessly pack habitat properties and 2 km geometry chunks for static hosting."""
 import base64, gzip, json, collections
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,9 +15,12 @@ def pack(data):
     for f in data['features']:
         c = dict(f['properties'])
         row, col = map(int, c['id'].split('-'))
-        c['tile'] = f'tiles/{row//100}-{col//100}'
+        c['tile'] = f'tiles/{row//40}-{col//40}'
         cells.append(c)
         groups[c['tile']].append({'id':c['id'], 'geometry':f['geometry']})
+    # Remove obsolete tile layout after a grid-size change.
+    for old in (ROOT / 'data' / 'tiles').glob('*.js'):
+        old.unlink()
     tiles = []
     for key, items in sorted(groups.items()):
         def points(value):

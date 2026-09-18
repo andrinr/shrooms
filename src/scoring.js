@@ -2,8 +2,12 @@
 (function () {
   const clamp = (value, low = 0, high = 1) => Math.min(high, Math.max(low, value));
   const known = value => typeof value === 'number' && Number.isFinite(value);
+  const monthFormatter=new Intl.DateTimeFormat('en', {timeZone:'Europe/Zurich',month:'numeric'});
+  let cachedDate, cachedMonth;
   function score(cell, species, weather, date = new Date()) {
-    const month = Number(new Intl.DateTimeFormat('en', { timeZone: 'Europe/Zurich', month: 'numeric' }).format(date));
+    const timestamp=date.getTime();
+    if(timestamp!==cachedDate){cachedDate=timestamp;cachedMonth=Number(monthFormatter.format(date));}
+    const month=cachedMonth;
     const distance = Math.min(...species.months.map(m => Math.min(Math.abs(month-m),12-Math.abs(month-m))));
     const season = distance === 0 ? 1 : distance === 1 ? .4 : .06;
     let tree = null;

@@ -1,4 +1,4 @@
-"""Prepare static 500 m forest cells from canton Zürich open geodata.
+"""Prepare static 100 m forest cells from canton Zürich open geodata.
 Run with .venv/bin/python scripts/build_habitat.py [--download].
 The deployed website needs none of these Python dependencies.
 """
@@ -74,12 +74,12 @@ forest_mask=(stand_ids>0)&land_mask
 usable=forest_mask
 projection=Transformer.from_crs(2056,4326,always_xy=True).transform
 cells=[]; weather=[]; weather_lookup={}
-print('Aggregating 500 m cells and forest masks…',flush=True)
-for row in range(0,dimensions[0],10):
- for col in range(0,dimensions[1],10):
-  section=np.s_[row:row+10,col:col+10]
+print('Aggregating 100 m cells and forest masks…',flush=True)
+for row in range(0,dimensions[0],2):
+ for col in range(0,dimensions[1],2):
+  section=np.s_[row:row+2,col:col+2]
   mask=usable[section]
-  if np.count_nonzero(mask)<3: continue
+  if np.count_nonzero(mask)<1: continue
   ids=stand_ids[section][mask]
   counts=collections.Counter(map(int,ids))
   stand_area=sum(counts.values())
@@ -136,13 +136,13 @@ def source_hash(path):
 
 metadata={
  'generated':datetime.datetime.now(datetime.timezone.utc).isoformat(),
- 'cellSizeMeters':500,'maskResolutionMeters':50,'terrainResolutionMeters':50,
+ 'cellSizeMeters':100,'maskResolutionMeters':50,'terrainResolutionMeters':50,
  'sourceStandCount':source_count,'usedStandCount':len(properties)-1,'cellCount':len(cells),
  'forestAreaKm2':round(float(np.count_nonzero(forest_mask)*0.0025),2),
  'mappedReserveForestAreaKm2':round(float(np.count_nonzero(forest_mask&reserve_mask)*0.0025),2),
  'sources':{name:{'url':url,'sha256':source_hash(CACHE/name)} for name,url in SOURCES.items()},
  'credit':'Geografisches Informationssystem des Kantons Zürich (GIS-ZH), Luftbild-Bestandeskarte, Gemeinden, Waldreservate, DTM 2022',
- 'limits':'50 m raster mask; cells under 0.75 ha omitted. Forest reserves included in habitat scores; collecting may be forbidden; other protected areas and local restrictions are not comprehensively mapped.'
+ 'limits':'50 m raster mask; cells with no 50 m forest sample omitted. Forest reserves included in habitat scores; collecting may be forbidden; other protected areas and local restrictions are not comprehensively mapped.'
 }
 result={'metadata':metadata,'weatherPoints':weather,'type':'FeatureCollection','features':cells}
 (ROOT/'data').mkdir(exist_ok=True)
