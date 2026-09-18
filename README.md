@@ -1,6 +1,6 @@
 # shrooms ✳
 
-**Follow the fungi.** A psychedelic mushroom habitat explorer for the **canton of Zürich**.
+**Follow the fungi.** A mushroom habitat explorer for the **canton of Zürich**.
 
 [![CI](https://github.com/andrinr/shrooms/actions/workflows/ci.yml/badge.svg)](https://github.com/andrinr/shrooms/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/code-MIT-limegreen.svg)](LICENSE)
