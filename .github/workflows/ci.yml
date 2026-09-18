@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-site:
+    name: Validate static site
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node scripts/check_syntax.cjs
+      - name: Check model, data, and compressed asset loading
+        run: node --test tests/*.test.cjs
+      - name: Check Python preparation scripts
+        run: python3 -m py_compile scripts/*.py
+      - name: Package static site
+        run: node scripts/package_site.cjs
+      - name: Upload verified site
+        uses: actions/upload-artifact@v4
+        with:
+          name: shrooms-static-site
+          path: _site/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

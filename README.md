@@ -61,7 +61,7 @@ node scripts/prefetch_weather.cjs
 Commit the resulting `data/weather.js` and deploy it with the other static files. The script preserves the previous snapshot if any weather batch is incomplete or fails. No scheduled refresh is configured; after 48 hours visitors can use the refresh button. Forest rebuilds automatically call `scripts/pack_habitat.py` to produce the index and geometry chunks.
 
 ```sh
-node --test tests/model.test.cjs
+node --test tests/*.test.cjs
 ```
 
 The tests check dry-weather sensitivity, species response to tree mix, missing data, terrain effects, exclusion of future weather, and validity of every generated cell.
@@ -75,3 +75,20 @@ The tests check dry-weather sensitivity, species response to tree mix, missing d
 - [Leaflet 1.9.4](https://leafletjs.com), bundled locally, BSD-2-Clause
 
 Always verify local access and protection rules. Have collected mushrooms checked by a municipal mushroom inspection service before eating them.
+
+## Continuous integration
+
+[CI runs](https://github.com/andrinr/shrooms/actions/workflows/ci.yml) execute on every push and pull request, and can also be started manually. The workflow uses Node 22 and checks JavaScript syntax, Python script syntax, the ecological model, all compressed chunks through the actual loader, missing assets, and project-relative links. Tests use bundled data and fixed dates, so an aging weather snapshot or unavailable external API does not break CI.
+
+Each successful run uploads a `shrooms-static-site` artifact containing only deployable assets (including `.nojekyll`). Raw source downloads, caches, scripts, tests, and Git metadata are excluded. Existing branch-based GitHub Pages deployment remains supported; CI does not change the repository's Pages settings.
+
+To run the same checks and produce the static folder locally:
+
+```sh
+node scripts/check_syntax.cjs
+node --test tests/*.test.cjs
+PYTHONPYCACHEPREFIX=.cache/pycompile python3 -m py_compile scripts/*.py
+node scripts/package_site.cjs
+```
+
+Serve `_site/` to preview the packaged version. No dependency installation, secrets, GIS rebuild, or live weather download is needed for CI.
