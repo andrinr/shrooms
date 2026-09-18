@@ -145,6 +145,7 @@ metadata={
 }
 result={'metadata':metadata,'weatherPoints':weather,'type':'FeatureCollection','features':cells}
 (ROOT/'data').mkdir(exist_ok=True)
-(ROOT/'data'/'habitat.js').write_text('window.SHROOMS_GEO='+json.dumps(result,ensure_ascii=False,separators=(',',':'))+';\n')
+from pack_habitat import pack
+pack(result)
 (ROOT/'data'/'sources.json').write_text(json.dumps(metadata,ensure_ascii=False,indent=2)+'\n')
 print(f'Wrote {len(cells):,} forest cells, {len(weather)} weather anchors, {metadata["forestAreaKm2"]} km² forest; {metadata["excludedReserveAreaKm2"]} km² reserves excluded.',flush=True)

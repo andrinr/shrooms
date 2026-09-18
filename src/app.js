@@ -1,9 +1,12 @@
-(function () {
+(async function () {
   const $=id=>document.getElementById(id);
-  const data=window.SHROOMS_GEO, species=window.SHROOMS_SPECIES;
+  let data;
+  try { data=await window.SHROOMS_LOAD('index'); } catch(error) { $('map').textContent='Forest data could not load. Please reload using a current browser.'; console.error(error); return; }
+  const species=window.SHROOMS_SPECIES;
   if (!data) { $('map').textContent='The forest dataset could not load. Reload the page to try again.'; return; }
-  const features=data.features, cells=features.map(f=>f.properties);
-  const byId=new Map(features.map(f=>[f.properties.id,f]));
+  const cells=data.cells;
+  const byId=new Map(cells.map(c=>[c.id,{type:"Feature",properties:c}]));
+  const loadedTiles=new Set();
   const state={species:'porcini',selected:null,map:null,layer:null,selection:null,mode:'heat',weather:new Map(),scores:new Map(),status:'loading',search:'',updated:null};
   const today=new Date();
   const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(today).map(p=>[p.type,p.value]));
@@ -29,13 +32,17 @@
   function cellStyle(feature) {
     return {stroke:false,fillColor:state.mode==='heat'?window.SHROOMS_COLOR(scored(feature.properties).value):treeColor(feature.properties),fillOpacity:.68};
   }
-  function select(id,fly=true) {
+  async function select(id,fly=true) {
     state.selected=id;
     const feature=byId.get(id), c=feature.properties;
+    renderDetail();renderList();
+    if(fly&&state.map)state.map.flyTo([c.lat,c.lon],13,{duration:.6});
+    try { await loadTile(c.tile); } catch { return; }
+    if(state.selected!==id)return;
     if(state.map){
       if(state.selection)state.map.removeLayer(state.selection);
       state.selection=L.geoJSON(feature,{interactive:false,style:{color:'#422149',weight:3,fillColor:'#fff',fillOpacity:.12}}).addTo(state.map);
-      if(fly)state.map.flyTo([c.lat,c.lon],13,{duration:.6});
+
     }
     renderDetail();renderList();
   }
@@ -64,7 +71,7 @@
   }
   function render() {
     $('species-latin').textContent=`${species[state.species].latin} · ${species[state.species].note}`;
-    $('map-status').textContent=state.status==='loading'?'Loading weather…':state.status==='live'?'Live weather connected':state.status==='cached'?'Recent weather · cached':state.status==='partial'?'Partial weather coverage':'Habitat & terrain only';
+    $('map-status').textContent=state.status==='loading'?'Loading weather…':state.status==='snapshot'?`Weather snapshot · ${state.weatherDay}`:state.status==='live'?`Weather refreshed · ${todayKey}`:state.status==='cached'?'Recent weather · cached':state.status==='partial'?'Partial weather coverage':'Habitat & terrain only';
     document.querySelector('.overlay-dot').classList.toggle('offline',state.status==='offline'||state.status==='partial');
     renderList();renderDetail();
   }
@@ -81,13 +88,45 @@
     state.map=L.map('map',{zoomControl:false,preferCanvas:true}).setView([47.43,8.65],10);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Forest/terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a>'}).addTo(state.map);
     L.control.zoom({position:'bottomright'}).addTo(state.map);
-    state.layer=L.geoJSON(features,{style:cellStyle,onEachFeature(feature,layer){
+    state.layer=L.geoJSON([],{style:cellStyle,onEachFeature(feature,layer){
       layer.on('click',()=>select(feature.properties.id,false));
       layer.bindTooltip(()=>`${escape(feature.properties.name)} · ${scored(feature.properties).value}/100<br>${treeName(feature.properties)} · click to inspect`,{sticky:true});
     }}).addTo(state.map);
-    const all=()=>state.map.fitBounds(state.layer.getBounds(),{padding:[20,20]});
+    const bounds=L.latLngBounds(data.tiles.flatMap(t=>t.bounds));
+    const all=()=>state.map.fitBounds(bounds,{padding:[20,20]});
     $('reset-view').addEventListener('click',()=>{state.search='';$('place-search').value='';all();});
-    state.map.on('moveend',renderList);all();select(state.selected,false);
+    state.map.on('moveend',()=>{renderList();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
+  }
+  async function loadTile(key) {
+    const items=await window.SHROOMS_LOAD(key);
+    if(loadedTiles.has(key))return;
+    loadedTiles.add(key);
+    const features=items.map(item=>{const f=byId.get(item.id);f.geometry=item.geometry;return f;});
+    state.layer?.addData(features);
+  }
+  async function loadVisibleTiles() {
+    const tiles=data.tiles.filter(t=>state.map.getBounds().intersects(L.latLngBounds(t.bounds))&&!loadedTiles.has(t.key));
+    let failed=false;
+    // Bound simultaneous downloads and decompression work.
+    let next=0;
+    await Promise.all(Array.from({length:4},async()=>{
+      while(next<tiles.length){const tile=tiles[next++];try{await loadTile(tile.key);}catch{failed=true;}}
+    }));
+    $('geometry-status').hidden=!failed;
+  }
+  async function initialWeather() {
+    try {
+      const snapshot=await window.SHROOMS_LOAD('weather');
+      if(window.SHROOMS_WEATHER.usable(snapshot,data.weatherPoints,today)){
+        state.weather=new Map(snapshot.entries);state.status='snapshot';state.weatherDay=snapshot.day;
+      }else state.status='offline';
+    }catch{state.status='offline';}
+    // A fresher manually refreshed cache wins over the bundled snapshot.
+    try{
+      const cached=JSON.parse(localStorage.getItem('shrooms-weather-v2'));
+      if(cached?.day===todayKey&&window.SHROOMS_WEATHER.usable(cached,data.weatherPoints,today)&&Date.now()-cached.at<3600000){state.weather=new Map(cached.entries);state.status='cached';}
+    }catch{}
+    recompute();
   }
   async function loadWeather(force=false) {
     const cacheKey='shrooms-weather-v2';
@@ -96,6 +135,9 @@
       const cached=JSON.parse(localStorage.getItem(cacheKey));
       if(cached?.day===todayKey&&cached.grid===gridKey&&Date.now()-cached.at<3600000&&cached.entries?.length===data.weatherPoints.length){state.weather=new Map(cached.entries);state.status='cached';recompute();return;}
     }catch{}
+    const previous={weather:state.weather,status:state.status};
+    state.weather=new Map();
+    $('refresh-weather').disabled=true;
     state.status='loading';render();
     for(let start=0;start<data.weatherPoints.length;start+=16){
       const points=data.weatherPoints.slice(start,start+16);
@@ -110,6 +152,8 @@
       }catch(error){console.warn('Weather batch unavailable',error.message);}finally{clearTimeout(timer);}
     }
     state.status=state.weather.size===data.weatherPoints.length?'live':state.weather.size?'partial':'offline';
+    if(!state.weather.size&&previous.weather.size){state.weather=previous.weather;state.status=previous.status;}
+    $('refresh-weather').disabled=false;
     if(state.status==='live')try{localStorage.setItem(cacheKey,JSON.stringify({day:todayKey,grid:gridKey,at:Date.now(),entries:[...state.weather]}));}catch{}
     recompute();
   }
@@ -117,5 +161,6 @@
   $('place-search').addEventListener('input',event=>{state.search=event.target.value.trim();renderList();});
   $('heatmap-mode').addEventListener('click',()=>mapMode('heat'));
   $('points-mode').addEventListener('click',()=>mapMode('forest'));
-  recompute();initMap();loadWeather();
+  $('refresh-weather').addEventListener('click',()=>loadWeather(true));
+  recompute();initMap();initialWeather();
 })();

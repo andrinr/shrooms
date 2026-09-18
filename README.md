@@ -1,6 +1,6 @@
 # shrooms ✳
 
-A static, browser-only mushroom habitat explorer for the **canton of Zürich**, with a psychedelic visual identity and an interactive forest heatmap. No runtime server, build step or API key is required. Live weather and map tiles require an internet connection.
+A static, browser-only mushroom habitat explorer for the **canton of Zürich**, with a psychedelic visual identity and an interactive forest heatmap. No runtime server, build step or API key is required. Map tiles and optional live weather refresh require an internet connection. Habitat and bundled weather are served entirely as static assets.
 
 ## Run and deploy
 
@@ -19,7 +19,7 @@ There are **no handpicked “known spots” or mushroom sighting records** in th
 - **Reserves:** the GIS-ZH forest reserve layer is excluded conservatively: about 41.91 km² of mapped forest. This does **not** cover every nature reserve or local restriction, and does not establish collection permission.
 - **Weather:** the [Open-Meteo forecast API](https://open-meteo.com/en/docs), requested in two batches for 32 anchors on a 10 km lattice. Each forest cell uses the nearest lattice anchor. Weather resolution is much coarser than the forest grid.
 
-The bundled dataset is about 4 MB. Exact source requests, retrieval/build metadata and raw-source hashes are in `data/sources.json`. GIS attribution remains visible on the map and in the source cards.
+The habitat dataset is 979 KB total: a 326 KB index plus 95 spatial chunks of at most 24 KB each. Geometry chunks load when their bounds intersect the viewport and are reused when revisited; the whole-canton view needs all chunks. Data are losslessly gzip-compressed inside base64 script envelopes, so GitHub Pages needs no custom headers and direct file previews avoid fetch/CORS restrictions. A current browser with `DecompressionStream` is required. Exact source requests, retrieval/build metadata and raw-source hashes are in `data/sources.json`. GIS attribution remains visible on the map and in the source cards.
 
 ## What the number means
 
@@ -36,7 +36,7 @@ The 0–100 **modeled suitability** score is an unvalidated ecological heuristic
 
 The score is a weighted geometric mean. Missing factors are omitted and the remaining weights normalized; the UI shows available factors. Tree and canopy inputs are omitted when their valid source coverage is below half of the cell's sampled forest area. Tree shares are normalized among represented broadleaf and conifer shares. Negative source sentinel values are never treated as observations.
 
-Only completed days enter the weather aggregates. Today's and future forecasts are excluded. A full 14-day rainfall history is required for the rainfall term. Soil moisture and humidity use up to 24 hourly samples from the preceding completed day. Successful responses are cached locally for one hour. The app falls back to the available habitat and terrain factors when weather fails.
+Only completed days enter the weather aggregates. Today's and future forecasts are excluded. A full 14-day rainfall history is required for the rainfall term. Soil moisture and humidity use up to 24 hourly samples from the preceding completed day. The default is a bundled, dated weather snapshot (roughly 2 KB), without visitor weather API requests. Snapshots older than 48 hours are excluded. “Refresh weather” requests current data and caches successful responses locally for one hour. The app falls back to available habitat and terrain factors when no usable weather is available. The snapshot date marks the aggregation cutoff; only earlier complete days are included.
 
 The source surveys are real; the species response functions and weights are assumptions. Soil acidity, deadwood, fungal presence, recent collection pressure and fine-scale microclimate are not modeled. Open grassland habitat for Parasol is outside this forest map. Habitat scores with different missing inputs should not be treated as equally certain.
 
@@ -51,6 +51,14 @@ python3 -m venv .venv
 ```
 
 To rebuild from existing downloads, omit `--download`. The script fails if the forest response appears truncated or hits the configured WFS feature limit. Do not ship `.cache` or `.venv`.
+
+Refresh the bundled weather before deploying (Node 18+):
+
+```sh
+node scripts/prefetch_weather.cjs
+```
+
+Commit the resulting `data/weather.js` and deploy it with the other static files. The script preserves the previous snapshot if any weather batch is incomplete or fails. No scheduled refresh is configured; after 48 hours visitors can use the refresh button. Forest rebuilds automatically call `scripts/pack_habitat.py` to produce the index and geometry chunks.
 
 ```sh
 node --test tests/model.test.cjs

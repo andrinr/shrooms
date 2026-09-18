@@ -2,9 +2,17 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const context={window:{},Intl,Date,Math,Number};vm.createContext(context);
-for(const file of ['src/data.js','src/scoring.js','src/weather.js','data/habitat.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
-const {SHROOMS_SPECIES:species,SHROOMS_SCORE:model,SHROOMS_WEATHER:weather,SHROOMS_GEO:data}=context.window;
+const zlib=require('node:zlib');
+const context={window:{SHROOMS_PACKED:{}},Intl,Date,Math,Number};vm.createContext(context);
+for(const file of ['src/data.js','src/scoring.js','src/weather.js','data/index.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
+const {SHROOMS_SPECIES:species,SHROOMS_SCORE:model,SHROOMS_WEATHER:weather}=context.window;
+const unpack=key=>JSON.parse(zlib.gunzipSync(Buffer.from(context.window.SHROOMS_PACKED[key],'base64')));
+const data=unpack('index');
+const properties=new Map(data.cells.map(c=>[c.id,c]));
+data.features=data.tiles.flatMap(tile=>{
+ vm.runInContext(fs.readFileSync(`data/${tile.key}.js`,'utf8'),context);
+ return unpack(tile.key).map(item=>({type:'Feature',properties:properties.get(item.id),geometry:item.geometry}));
+});
 const autumn=new Date('2026-09-18T12:00:00Z');
 const cell={forest:90,canopy:85,canopyKnown:1,treeKnown:1,conifer:30,broadleaf:70,beech:60,oak:10,slope:8,aspect:0};
 const wet={rain14:55,soil:.32,humidity:85,temp7:15};
@@ -49,4 +57,15 @@ test('all generated cells have valid, bounded source values and scores',()=>{
   const polygons=feature.geometry.type==='Polygon'?[feature.geometry.coordinates]:feature.geometry.coordinates;
   for(const polygon of polygons)for(const ring of polygon){assert.ok(ring.length>=4);assert.deepEqual(ring[0],ring[ring.length-1]);}
  }
+});
+
+test('weather snapshots reject stale, future, incomplete and mismatched grids',()=>{
+ const points=[{id:'a'}],now=new Date('2026-09-18T12:00:00Z');
+ const snapshot={at:now.getTime()-3600000,grid:'a',entries:[[0,wet]]};
+ assert.ok(weather.usable(snapshot,points,now));
+ for(const change of [{at:now.getTime()-49*3600000},{at:now.getTime()+1000},{grid:'b'},{entries:[]}])assert.equal(weather.usable({...snapshot,...change},points,now),false);
+});
+test('compressed assets retain all source geometry and fit small chunks',()=>{
+ assert.equal(new Set(data.features.map(f=>f.properties.id)).size,data.cells.length);
+ for(const tile of data.tiles)assert.ok(tile.bytes<30000);
 });

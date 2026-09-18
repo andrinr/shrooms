@@ -17,5 +17,11 @@
     };
     return Object.values(result).some(known)?result:null;
   }
-  window.SHROOMS_WEATHER={parse};
+  function usable(snapshot,points,now=new Date()) {
+    const age=now.getTime()-snapshot?.at;
+    return age>=0 && age<=48*3600000 && snapshot.grid===points.map(p=>p.id).join('|') &&
+      Array.isArray(snapshot.entries) && snapshot.entries.length===points.length &&
+      snapshot.entries.every(([id,w],i)=>id===i && w && Object.values(w).some(known));
+  }
+  window.SHROOMS_WEATHER={parse,usable};
 })();
