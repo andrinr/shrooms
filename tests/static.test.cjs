@@ -64,3 +64,17 @@ test('HTML assets and navigation anchors resolve under a GitHub Pages subpath',(
   assert.ok(fs.existsSync(path.resolve(reference.split(/[?#]/)[0])),`Missing asset: ${reference}`);
  }
 });
+
+test('basemap is bundled, geographically bounded, and has no external SVG resources',()=>{
+ const context={window:{}};vm.createContext(context);
+ vm.runInContext(fs.readFileSync('data/basemap.js','utf8'),context);
+ const base=context.window.SHROOMS_BASEMAP;
+ assert.equal(base.projection,'EPSG:3857');
+ const [[south,west],[north,east]]=base.bounds;
+ assert.ok(south<north&&west<east);
+ assert.ok(base.labels.length>150);
+ for(const label of base.labels)assert.ok(label.lat>=south&&label.lat<=north&&label.lon>=west&&label.lon<=east);
+ const svg=fs.readFileSync('data/basemap.svg','utf8');
+ assert.match(svg,/<svg /);assert.doesNotMatch(svg,/<script|<image|(?:href|src)=|url\(/i);
+ assert.doesNotMatch(fs.readFileSync('src/app.js','utf8'),/L\.tileLayer\(/);
+});

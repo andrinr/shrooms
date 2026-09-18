@@ -1,6 +1,6 @@
 # shrooms ✳
 
-A static, browser-only mushroom habitat explorer for the **canton of Zürich**, with a psychedelic visual identity and an interactive forest heatmap. No runtime server, build step or API key is required. Map tiles and optional live weather refresh require an internet connection. Habitat and bundled weather are served entirely as static assets.
+A static, browser-only mushroom habitat explorer for the **canton of Zürich**, with a psychedelic visual identity and an interactive forest heatmap. No runtime server, build step or API key is required. The basemap, habitat, and bundled weather are served entirely as static assets. Only optional live weather refresh and external links require an internet connection.
 
 ## Run and deploy
 
@@ -92,3 +92,17 @@ node scripts/package_site.cjs
 ```
 
 Serve `_site/` to preview the packaged version. No dependency installation, secrets, GIS rebuild, or live weather download is needed for CI.
+
+## Bundled basemap
+
+`data/basemap.svg` is a roughly 251 KB vector map derived from the cached GIS-ZH municipality layer. Its Web Mercator projection aligns with the interactive forest overlay. It includes municipality boundaries and lake areas classified separately in that source, plus municipality labels from `data/basemap.js`. Labels indicate municipality areas rather than surveyed town centers. Smaller municipality labels appear when zoomed in.
+
+No third-party map tiles are requested, including when previewing `index.html` directly. Zoom, pan, cell selection, and species heatmaps remain interactive. This simplified canton map omits streets, trails, and lakes contained within municipal polygons; the external “Explore this forest” link opens a detailed OpenStreetMap view.
+
+Rebuild after refreshing the cached municipality data:
+
+```sh
+.venv/bin/python scripts/build_basemap.py
+```
+
+Both basemap files are bundled into the CI artifact automatically.
