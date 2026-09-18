@@ -1,0 +1,52 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const context={window:{},Intl,Date,Math,Number};vm.createContext(context);
+for(const file of ['src/data.js','src/scoring.js','src/weather.js','data/habitat.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
+const {SHROOMS_SPECIES:species,SHROOMS_SCORE:model,SHROOMS_WEATHER:weather,SHROOMS_GEO:data}=context.window;
+const autumn=new Date('2026-09-18T12:00:00Z');
+const cell={forest:90,canopy:85,canopyKnown:1,treeKnown:1,conifer:30,broadleaf:70,beech:60,oak:10,slope:8,aspect:0};
+const wet={rain14:55,soil:.32,humidity:85,temp7:15};
+
+test('dry weather meaningfully lowers the same forest score',()=>{
+ const good=model.score(cell,species.porcini,wet,autumn);
+ const dry=model.score(cell,species.porcini,{rain14:0,soil:.1,humidity:35,temp7:15},autumn);
+ assert.ok(good.value-dry.value>30);
+});
+test('horn of plenty responds to measured tree composition',()=>{
+ const broadleaf=model.score({...cell,conifer:0,broadleaf:100,beech:100,oak:0},species.horn,wet,autumn);
+ const conifer=model.score({...cell,conifer:100,broadleaf:0,beech:0,oak:0},species.horn,wet,autumn);
+ assert.ok(broadleaf.value>conifer.value+15);
+});
+test('missing weather is omitted rather than fabricated as zero',()=>{
+ const result=model.score(cell,species.porcini,null,autumn);
+ assert.equal(result.factors.moisture.value,null);assert.equal(result.factors.temperature.value,null);
+ assert.equal(result.completeness,.5);assert.ok(Number.isFinite(result.value));assert.equal(result.live,false);
+});
+test('steep southern slopes have a lower terrain moisture proxy',()=>{
+ assert.ok(model.score({...cell,slope:4},species.porcini,wet,autumn).factors.terrain.value>model.score({...cell,slope:40,aspect:180},species.porcini,wet,autumn).factors.terrain.value);
+});
+test('weather aggregation excludes today and future forecasts',()=>{
+ const time=Array.from({length:16},(_,i)=>`2026-09-${String(i+4).padStart(2,'0')}`);
+ const item={daily:{time,precipitation_sum:time.map((_,i)=>i<14?2:999),temperature_2m_mean:time.map((_,i)=>i<14?15:99)},hourly:{time:['2026-09-17T12:00','2026-09-18T12:00'],soil_moisture_3_to_9cm:[.3,.99],relative_humidity_2m:[80,1]}};
+ const result=weather.parse(item,'2026-09-18');
+ assert.equal(result.rain14,28);assert.equal(result.temp7,15);assert.equal(result.soil,.3);assert.equal(result.humidity,80);
+ item.daily.precipitation_sum[0]=null;assert.equal(weather.parse(item,'2026-09-18').rain14,null);
+});
+test('all generated cells have valid, bounded source values and scores',()=>{
+ assert.equal(data.features.length,data.metadata.cellCount);assert.ok(data.features.length>4000);
+ const ids=new Set();
+ for(const feature of data.features){
+  const c=feature.properties;assert.ok(!ids.has(c.id));ids.add(c.id);
+  assert.ok(c.lat>47.1&&c.lat<47.8&&c.lon>8.2&&c.lon<9.1);
+  assert.ok(c.area>=.75&&c.area<=25);assert.ok(c.forest>=0&&c.forest<=100);
+  assert.ok(c.weather>=0&&c.weather<data.weatherPoints.length);
+  assert.ok(c.slope===null||(c.slope>=0&&c.slope<90));
+  for(const s of Object.values(species)){
+   const score=model.score(c,s,wet,autumn).value;assert.ok(Number.isFinite(score)&&score>=0&&score<=100);
+  }
+  const polygons=feature.geometry.type==='Polygon'?[feature.geometry.coordinates]:feature.geometry.coordinates;
+  for(const polygon of polygons)for(const ring of polygon){assert.ok(ring.length>=4);assert.deepEqual(ring[0],ring[ring.length-1]);}
+ }
+});

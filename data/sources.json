@@ -1,0 +1,31 @@
+{
+  "generated": "2026-09-18T13:32:31.922539+00:00",
+  "cellSizeMeters": 500,
+  "maskResolutionMeters": 50,
+  "terrainResolutionMeters": 50,
+  "sourceStandCount": 95716,
+  "usedStandCount": 92866,
+  "cellCount": 4726,
+  "forestAreaKm2": 494.17,
+  "excludedReserveAreaKm2": 41.91,
+  "sources": {
+    "stands.json": {
+      "url": "https://maps.zh.ch/wfs/OGDZHWFS?service=WFS&request=GetFeature&version=2.0.0&count=100000&outputFormat=application%2Fjson&srsName=EPSG:2056&typeNames=ms:ogd-0290_giszhpub_wald_luftbildbestand_f",
+      "sha256": "ebfc0aa8f30df8db77f98b036f4e32f8a070092647eb6dd58e85fcbce6f5f533"
+    },
+    "municipalities.json": {
+      "url": "https://maps.zh.ch/wfs/OGDZHWFS?service=WFS&request=GetFeature&version=2.0.0&count=100000&outputFormat=application%2Fjson&srsName=EPSG:2056&typeNames=ms:ogd-0095_arv_basis_up_gemeinden_f",
+      "sha256": "22068a7c57729e15cf56b066f6bf26a29d2b83e4105b53062043211c088b28e0"
+    },
+    "reserves.json": {
+      "url": "https://maps.zh.ch/wfs/OGDZHWFS?service=WFS&request=GetFeature&version=2.0.0&count=100000&outputFormat=application%2Fjson&srsName=EPSG:2056&typeNames=ms:ogd-0046_arv_basis_waldreservat_f",
+      "sha256": "b5a38d67475a785704f1b4eb6643a8b46d944d7e08984c4364defe33e39a1202"
+    },
+    "terrain.tif": {
+      "url": "https://wms.zh.ch/DEMWCS?SERVICE=WCS&REQUEST=GetCoverage&VERSION=1.0.0&COVERAGE=dtm&CRS=EPSG:2056&BBOX=2654500,1222400,2720000,1300000&RESX=50&RESY=50&FORMAT=GeoTIFF&INTERPOLATION=bilinear",
+      "sha256": "a7d24fc823a1161f6edccf8ba1e1d99b236ccdbd6bb23b926bdd3bfc8e23b3ff"
+    }
+  },
+  "credit": "Geografisches Informationssystem des Kantons Zürich (GIS-ZH), Luftbild-Bestandeskarte, Gemeinden, Waldreservate, DTM 2022",
+  "limits": "50 m raster mask; cells under 0.75 ha omitted. Forest reserves excluded conservatively; other protected areas and local restrictions are not comprehensively mapped."
+}
