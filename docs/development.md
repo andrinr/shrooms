@@ -69,4 +69,4 @@ Omit `--download` to reuse the cached OpenStreetMap extract. The SVG and label f
 | `vendor/` | Leaflet and its license |
 | `docs/media/` | Recorded UI showcase; excluded from the deployment artifact |
 
-The showcase GIF is a sequence of real browser captures, with a few seconds per scene. Its historical scores are illustrative; they are not current conditions.
+The showcase GIF is a 14-second sequence of real browser captures cropped to the map workspace: two zoom steps followed by species changes, with two seconds per scene. Its historical scores are illustrative; they are not current conditions.

@@ -9,9 +9,9 @@ Explore forests by tree composition, moisture, slope, and season. Built with pla
 
 ## A look around
 
-![shrooms UI walkthrough: homepage, species heatmaps, Winterthur search, and forest type view](docs/media/showcase.gif)
+![shrooms map walkthrough: zooming into forests and comparing five mushroom heatmaps](docs/media/showcase.gif)
 
-*Real UI captures: explore the canton → change species → find Winterthur → inspect forest types. Recorded September 2026; shown scores are illustrative, not current conditions.*
+*Map-only UI captures: zoom from the canton into local forests, then compare porcini, chanterelle, bay bolete, horn of plenty, and saffron milkcap. Recorded September 2026; shown scores are illustrative, not current conditions.*
 
 [View a still image](docs/media/overview.png) · Basemap: GIS-ZH and © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Weather: [Open-Meteo](https://open-meteo.com/).
 
