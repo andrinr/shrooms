@@ -106,3 +106,7 @@ Rebuild after refreshing the cached municipality data:
 ```
 
 Both basemap files are bundled into the CI artifact automatically.
+
+## Heatmap contrast
+
+Colors adapt to the selected species’ scores across the entire canton: the 10th percentile is the low color endpoint and the 95th percentile is the high endpoint. Scores outside that interval clamp to the endpoint colors. Pink highlights the strongest relative signals, while weaker cells are more transparent. The legend displays the actual score thresholds. Endpoints stay fixed while panning and update when species or weather changes. A minimum 10-point span prevents tiny differences from being stretched across the entire palette. Numeric suitability scores are unchanged; these colors do not indicate calibrated probabilities or guarantee good conditions.
