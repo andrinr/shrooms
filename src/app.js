@@ -131,6 +131,9 @@
     const bounds=L.latLngBounds(data.tiles.flatMap(t=>t.bounds));
     const all=()=>state.map.fitBounds(bounds,{padding:[20,20]});
     $('reset-view').addEventListener('click',()=>{state.search='';$('place-search').value='';all();});
+    const overviewPane=state.map.createPane('overviewHeat');
+    overviewPane.style.zIndex=410;
+    state.overviewRenderer=L.canvas({pane:'overviewHeat',padding:.2});
     state.overview=L.layerGroup();
     state.map.on('moveend',()=>{renderList();updateResolution();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
   }
@@ -138,6 +141,7 @@
     if(!state.map||!state.overview)return;
     const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
     document.querySelector('.heatmap-caption').textContent=size===100?'Offline basemap · 100 m forest scores':`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for 100 m detail`;
+    state.map.getPane('overviewHeat').classList.toggle('soft-heat',state.mode==='heat');
     state.overview.clearLayers();
     if(size===100){
       state.map.removeLayer(state.overview);state.layer.addTo(state.map);
@@ -147,9 +151,9 @@
     for(const group of overviewGroups.get(size)){
       const summary=window.SHROOMS_ADAPTIVE.summarize(group,state.scores);
       const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
-      const center=state.map.project([summary.lat,summary.lon]),half=size===1000?4:3.5;
+      const center=state.map.project([summary.lat,summary.lon]),half=size===1000?5:4.5;
       const bounds=L.latLngBounds(state.map.unproject(center.subtract([half,half])),state.map.unproject(center.add([half,half])));
-      L.rectangle(bounds,{stroke:false,fillColor:color,fillOpacity:.9})
+      L.rectangle(bounds,{renderer:state.overviewRenderer,stroke:false,fillColor:color,fillOpacity:state.mode==='heat'?.78:.9})
         .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to zoom`,{sticky:true})
         .on('click',()=>state.map.setView([summary.lat,summary.lon],size===1000?12:14))
         .addTo(state.overview);
