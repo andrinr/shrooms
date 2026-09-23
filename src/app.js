@@ -155,8 +155,6 @@
     if(!state.map||!state.overview)return;
     const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
     document.querySelector('.heatmap-caption').textContent=size===100?`Offline basemap · ${gridSize} m forest scores`:`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
-    state.map.getPane('overviewHeat').style.setProperty('--heat-blur',state.map.getZoom()<9?'1px':'3px');
-    state.map.getPane('overviewHeat').classList.toggle('soft-heat',state.mode==='heat');
     state.overview.clearLayers();
     if(size===100){
       state.map.removeLayer(state.overview);state.layer.addTo(state.map);
