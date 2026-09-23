@@ -1,6 +1,18 @@
 /* Columns: English, Swiss Standard German, French, Italian, Rumantsch Grischun.
    Place names, scientific names and private notebook content retain their original form. */
 window.SHROOMS_MESSAGES=String.raw`
+Use my location|Meinen Standort verwenden|Utiliser ma position|Usa la mia posizione|Dovra mia posiziun
+Hide location|Standort ausblenden|Masquer ma position|Nascondi posizione|Zuppenta la posiziun
+Your position stays in this tab.|Dein Standort bleibt in diesem Tab.|Votre position reste dans cet onglet.|La tua posizione resta in questa scheda.|Tia posiziun resta en quest tab.
+Your location|Dein Standort|Votre position|La tua posizione|Tia posiziun
+Finding your location…|Standort wird ermittelt…|Recherche de votre position…|Ricerca della posizione…|Tschertgar tia posiziun…
+Location accuracy: about {distance} m.|Standortgenauigkeit: etwa {distance} m.|Précision de la position : environ {distance} m.|Precisione della posizione: circa {distance} m.|Precisiun da la posiziun: circa {distance} m.
+Location needs HTTPS or localhost and a supported browser.|Der Standort benötigt HTTPS oder localhost und einen unterstützten Browser.|La localisation nécessite HTTPS ou localhost et un navigateur compatible.|La posizione richiede HTTPS o localhost e un browser compatibile.|La posiziun dovra HTTPS u localhost ed in navigatur cumpatibel.
+Outside this map. Choose Switzerland or your canton, then try again.|Ausserhalb dieser Karte. Wähle die Schweiz oder deinen Kanton und versuche es erneut.|Hors de cette carte. Choisissez la Suisse ou votre canton, puis réessayez.|Fuori da questa mappa. Scegli la Svizzera o il tuo cantone e riprova.|Ordaifer questa charta. Tscherna la Svizra u tes chantun ed emprova danovamain.
+Your location is outside the Swiss map coverage.|Dein Standort liegt ausserhalb der Schweizer Kartenabdeckung.|Votre position est hors de la couverture de la carte suisse.|La tua posizione è fuori dalla copertura della mappa svizzera.|Tia posiziun è ordaifer la cuverta da la charta svizra.
+Location permission denied. Allow it in your browser to try again.|Standortzugriff verweigert. Erlaube ihn im Browser und versuche es erneut.|Accès à la position refusé. Autorisez-le dans votre navigateur pour réessayer.|Accesso alla posizione negato. Consentilo nel browser e riprova.|Access a la posiziun refusà. Permetta el en tes navigatur ed emprova danovamain.
+Location timed out. Please try again.|Zeitüberschreitung beim Standort. Bitte erneut versuchen.|Délai de localisation dépassé. Veuillez réessayer.|Tempo di localizzazione scaduto. Riprova.|Il temp per la posiziun è scadì. Emprova danovamain.
+Location unavailable. Please try again.|Standort nicht verfügbar. Bitte erneut versuchen.|Position indisponible. Veuillez réessayer.|Posizione non disponibile. Riprova.|Posiziun betg disponibla. Emprova danovamain.
 Language|Sprache|Langue|Lingua|Lingua
 shrooms — follow the fungi|shrooms — folge den Pilzen|shrooms — suivez les champignons|shrooms — segui i funghi|shrooms — suonda ils bulieus
 shrooms home|shrooms Startseite|Accueil shrooms|Pagina iniziale shrooms|Pagina iniziala shrooms

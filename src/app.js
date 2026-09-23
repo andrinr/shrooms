@@ -146,6 +146,40 @@
     const bounds=L.latLngBounds(data.tiles.flatMap(t=>t.bounds));
     const all=()=>state.map.fitBounds(bounds,{padding:[20,20]});
     $('reset-view').addEventListener('click',()=>{state.search='';$('place-search').value='';all();});
+    let locationLayers=null;
+    const locateButton=$('locate-me'),locationStatus=$('location-status'),clearLocation=$('clear-location');
+    locateButton.disabled=false;
+    clearLocation.addEventListener('click',()=>{
+      locationLayers?.remove();locationLayers=null;clearLocation.hidden=true;
+      locationStatus.textContent='Your position stays in this tab.';
+    });
+    locateButton.addEventListener('click',()=>{
+      if(!window.isSecureContext||!navigator.geolocation){
+        locationStatus.textContent='Location needs HTTPS or localhost and a supported browser.';return;
+      }
+      locateButton.disabled=true;locationStatus.textContent='Finding your location…';
+      navigator.geolocation.getCurrentPosition(position=>{
+        locateButton.disabled=false;
+        const {latitude,longitude,accuracy}=position.coords;
+        const point=L.latLng(latitude,longitude);
+        if(!base||!L.latLngBounds(base.bounds).contains(point)){
+          locationStatus.textContent=region.id==='zh'?'Outside this map. Choose Switzerland or your canton, then try again.':'Your location is outside the Swiss map coverage.';
+          return;
+        }
+        locationLayers?.remove();
+        locationLayers=L.layerGroup().addTo(state.map);
+        const uncertainty=L.circle(point,{radius:accuracy,color:'#2878c7',weight:1,fillOpacity:.08,interactive:false}).addTo(locationLayers);
+        L.circleMarker(point,{radius:7,color:'#fff',weight:3,fillColor:'#2878c7',fillOpacity:1})
+          .bindTooltip(window.SHROOMS_I18N.t('Your location')).addTo(locationLayers);
+        clearLocation.hidden=false;
+        state.search='';$('place-search').value='';
+        state.map.fitBounds(uncertainty.getBounds(),{padding:[35,35],maxZoom:14});
+        locationStatus.textContent=window.SHROOMS_I18N.t('Location accuracy: about {distance} m.').replace('{distance}',number(Math.ceil(accuracy)));
+      },error=>{
+        locateButton.disabled=false;
+        locationStatus.textContent=error.code===1?'Location permission denied. Allow it in your browser to try again.':error.code===3?'Location timed out. Please try again.':'Location unavailable. Please try again.';
+      },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+    });
     const overviewPane=state.map.createPane('overviewHeat');
     overviewPane.style.zIndex=410;
     state.overviewRenderer=L.canvas({pane:'overviewHeat',padding:.2});
