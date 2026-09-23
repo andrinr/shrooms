@@ -101,3 +101,7 @@ All regions now use the same zoom-dependent swisstopo national map by default. T
 Only visible tiles plus a small pan buffer are requested, after zoom settles. No API key, backend tile proxy or paid map subscription is needed. Tile errors switch to the existing bundled basemap; selecting Swiss topo map retries. Bundled-map mode is available explicitly, including for offline use. Map requests go directly to swisstopo and reveal the viewed area. Source terms and attribution are in the third-party notices.
 
 This removes the Zürich/non-Zürich **cartographic** detail gap while online. It does not upgrade habitat measurements: Zürich scores still use 50 m cells and surveyed tree shares; other cantons retain 100 m cells and coarser/missing inputs, and the Swiss overview remains 500 m.
+
+### Overview rendering performance
+
+Overview squares are painted into small canvas map tiles rather than individual Leaflet rectangles. A spatial tile index handles square drawing and click selection, including squares crossing tile seams. Tiles cache projected centers at the active zoom, and panning reuses them when the scale is unchanged. Color changes redraw the small tile set. Viewport statistics and sidebar updates wait for a 100 ms pause in map movement; the existing map remains visible during zoom animations. Detail geometry and numeric scores are unchanged.

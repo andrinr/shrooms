@@ -21,9 +21,8 @@
   const overviewGroups=new Map([500,1000].map(size=>[size,window.SHROOMS_ADAPTIVE.group(cells,size)]));
   const state={species:'porcini',selected:null,map:null,layer:null,selection:null,mode:'heat',weather:new Map(),scores:new Map(),status:'loading',search:'',updated:null};
   let rankedCells=[];
-  const overviewSummaries=new Map(),overviewLayers=new Map();
-  let overviewSize=null,overviewZoom=null;
-  function invalidateOverview(){overviewSummaries.clear();overviewLayers.clear();state.overview?.clearLayers();overviewSize=null;}
+  const overviewSummaries=new Map();
+  function invalidateOverview(){overviewSummaries.clear();}
   const today=new Date();
   const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(today).map(p=>[p.type,p.value]));
   const todayKey=`${parts.year}-${parts.month}-${parts.day}`;
@@ -193,9 +192,11 @@
     });
     const overviewPane=state.map.createPane('overviewHeat');
     overviewPane.style.zIndex=410;
-    state.overviewRenderer=L.canvas({pane:'overviewHeat',padding:.2});
-    state.overview=L.layerGroup();
-    state.map.on('moveend',()=>{updateResolution();renderList();renderDetail();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
+    overviewPane.style.pointerEvents='none';
+    state.overview=window.SHROOMS_OVERVIEW.create(L,state.map);
+    let viewTimer;
+    state.map.on('movestart',()=>clearTimeout(viewTimer));
+    state.map.on('moveend',()=>{clearTimeout(viewTimer);viewTimer=setTimeout(()=>{updateResolution();renderList();renderDetail();loadVisibleTiles();},100);});all();updateResolution();loadVisibleTiles();select(state.selected,false);
     const tiledMap=window.SHROOMS_BASEMAP_TILES.mount(L,state.map,(online,failed)=>{
       state.onlineMap=online;$('basemap-style').value=online?'online':'offline';
       $('map-orientation').disabled=!online;
@@ -223,35 +224,17 @@
     heatScale=nextScale;
     $('heat-low').textContent=`≤ ${Math.round(heatScale.low)} / 100`;
     $('heat-high').textContent=`≥ ${Math.round(heatScale.high)} / 100`;
-    if(scaleChanged&&state.mode==='heat')state.layer.setStyle(cellStyle);
+    if(size===100&&state.mode==='heat'&&(scaleChanged||!state.map.hasLayer(state.layer)))state.layer.setStyle(cellStyle);
     if(size===100){
       state.map.removeLayer(state.overview);state.layer.addTo(state.map);
       return;
     }
-    state.map.removeLayer(state.layer);state.overview.addTo(state.map);
-    if(overviewSize!==size){state.overview.clearLayers();overviewLayers.clear();overviewSize=size;}
-    if(!overviewSummaries.has(size))overviewSummaries.set(size,overviewGroups.get(size).map(group=>window.SHROOMS_ADAPTIVE.summarize(group,state.scores)));
-    const zoom=state.map.getZoom(),resized=zoom!==overviewZoom;
-    overviewZoom=zoom;
-    const viewport=state.map.getBounds().pad(.15),wanted=new Set();
-    const half=Math.min(size===1000?5:4.5,Math.max(1.3,5*2**(zoom-10)));
-    overviewSummaries.get(size).forEach((summary,key)=>{
-      if(!viewport.contains([summary.lat,summary.lon]))return;
-      wanted.add(key);
-      const existing=overviewLayers.get(key);
-      if(existing&&scaleChanged&&state.mode==='heat')existing.setStyle({fillColor:scoreColor(summary.value)});
-      if(existing&&!resized)return;
-      const center=state.map.project([summary.lat,summary.lon]);
-      const bounds=L.latLngBounds(state.map.unproject(center.subtract([half,half])),state.map.unproject(center.add([half,half])));
-      if(existing){existing.setBounds(bounds);return;}
-      const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
-      const layer=L.rectangle(bounds,{renderer:state.overviewRenderer,stroke:false,fillColor:color,fillOpacity:state.mode==='heat'?.78:.9})
-        .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to inspect`,{sticky:true})
-        .on('click',()=>showSummary(overviewGroups.get(size)[key],summary,size))
-        .addTo(state.overview);
-      overviewLayers.set(key,layer);
-    });
-    for(const [key,layer] of overviewLayers)if(!wanted.has(key)){state.overview.removeLayer(layer);overviewLayers.delete(key);}
+    state.map.removeLayer(state.layer);
+    state.overview.setData(overviewSummaries.get(size),size,
+      summary=>state.mode==='heat'?scoreColor(summary.value):treeColor(summary),
+      (summary,key)=>showSummary(overviewGroups.get(size)[key],summary,size),
+      `${state.mode}:${heatScale.low}:${heatScale.high}`);
+    if(!state.map.hasLayer(state.overview))state.overview.addTo(state.map);
   }
 
   function showSummary(group,summary,size){
