@@ -1,81 +1,83 @@
-![shrooms — Follow the fungi. Colorful mushrooms and orbital patterns from the homepage banner.](docs/media/banner.png)
+![shrooms — Follow the fungi.](docs/media/banner.png)
 
 # shrooms
 
-**Follow the fungi.** A mushroom habitat explorer for the **canton of Zürich**.
+**Follow the fungi.** Explore mushroom habitat across **Switzerland**, compare species, and keep a private forest notebook.
 
 [![CI](https://github.com/andrinr/shrooms/actions/workflows/ci.yml/badge.svg)](https://github.com/andrinr/shrooms/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/code-MIT-limegreen.svg)](LICENSE)
 
-Explore forests by tree composition, moisture, slope, and season. Built with plain HTML, CSS, and JavaScript; deployable on GitHub Pages without a backend or API key.
+## Explore
 
-## A look around
+![Map walkthrough: zooming into forests and comparing mushroom heatmaps](docs/media/showcase.gif)
 
-![shrooms map walkthrough: zooming into forests and comparing five mushroom heatmaps](docs/media/showcase.gif)
+*Zürich map walkthrough recorded September 2026, before the nationwide expansion. Scores illustrate the interface, not current conditions. Basemap: GIS-ZH and © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).*
 
-*Map-only UI captures: zoom from the canton into local forests, then compare porcini, chanterelle, bay bolete, horn of plenty, and saffron milkcap. Recorded September 2026; shown scores are illustrative, not current conditions.*
+- **All 26 cantons:** a lightweight Swiss overview and regional data loaded on demand.
+- **Finer habitat detail:** 50 m cells in Zürich, 100 m elsewhere, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
+- **Seven mushrooms:** porcini, chanterelle, horn of plenty, parasol, bay bolete, wood hedgehog, and saffron milkcap.
+- **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
+- **Private accounts and saved spots:** names, notes, species, export, recovery codes and account deletion. Locations are never shared publicly.
+- **Shared weather:** the backend refreshes a cached snapshot every six hours, instead of making every visitor contact the provider.
+- **Protected-area overlays:** named boundaries and collection warnings, with partial coverage clearly marked.
+- **Bundled maps:** no dependency on live map tiles; pan, zoom, search municipalities and inspect forest cells.
 
-[View a still image](docs/media/overview.png) · Basemap: GIS-ZH and © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Weather: [Open-Meteo](https://open-meteo.com/).
-
-## What it does
-
-- **Seven species:** porcini, chanterelle, horn of plenty, parasol, bay bolete, wood hedgehog, and saffron milkcap.
-- **Interactive heatmap:** pan, zoom, search municipalities, and inspect the inputs behind every score. Pink highlights stronger relative signals; the legend shows the score thresholds.
-- **Adaptive map:** 1 km and 500 m forest summaries while zoomed out, switching to 100 m detail as you zoom in.
-- **64,500 forest cells:** 100 m scores built from official forest surveys and terrain sampled at 50 m.
-- **Detailed bundled basemap:** major roads, rivers, and 904 settlement locations, with labels revealed as you zoom. No live map-tile requests.
-- **Visible forest reserves:** hatched boundaries and named popups, with explicit coverage limits.
-- **Weather context:** rainfall, soil moisture, humidity, temperature, sunshine, and a provisional drying adjustment. A dated snapshot ships with the app; live refresh is optional.
-- **Static delivery:** compressed regional geometry files load as needed. No framework, database, or runtime build step.
-
-> Scores describe **modeled habitat suitability**, not a calibrated probability or a known mushroom find. The model is unvalidated. Check local collection rules and have mushrooms professionally identified before eating them.
+> Scores are **unvalidated habitat suitability estimates**, not calibrated probabilities, mushroom sightings, or permission to collect. Check local rules and have mushrooms professionally identified before eating them.
 
 ## Run locally
+
+Requires **Node.js 24 or newer**. There are no runtime npm dependencies.
 
 ```sh
 git clone git@github.com:andrinr/shrooms.git
 cd shrooms
-python3 -m http.server 8000
+npm run build
+npm start
 ```
 
-Open **http://localhost:8000** in a current browser. Directly opening `index.html` also works; compressed data require browser support for `DecompressionStream`.
+Open **http://localhost:3000**. Accounts and weather cache persist in `.storage/`, which is excluded from Git and frontend builds. Save the recovery code shown when creating an account; no email service is required.
 
-The basemap, habitat data, and weather snapshot are bundled. Optional weather refresh, external links, and Google Fonts use the internet; system fonts provide a fallback. Snapshots older than 48 hours are excluded from scoring.
+## Deploy cheaply
 
-## Deploy to GitHub Pages
-
-In the repository, choose **Settings → Pages → Deploy from a branch → main → / (root)**. The site uses relative paths and includes `.nojekyll`.
-
-CI also produces a `shrooms-static-site` artifact containing just deployable files and license notices. See [development instructions](docs/development.md) for packaging and data refresh commands.
-
-## Data and model
-
-| Source | Used for |
-| --- | --- |
-| [GIS-ZH](https://www.zh.ch/de/politik-staat/opendata/offene-geodaten.html) | Forest composition, canopy, terrain, boundaries, forest reserves |
-| [OpenStreetMap](https://www.openstreetmap.org/copyright) | Roads, rivers, and settlement locations |
-| [Open-Meteo](https://open-meteo.com/en/docs) | Regional weather at 32 locations on a 10 km lattice |
-
-Weather is much coarser than the forest grid. Soil acidity, deadwood, frost damage, and fine-scale microclimate are not modeled. Forest reserves retain habitat scores under a warning overlay: collecting may be forbidden. The map does not establish collection permission.
-
-**[Model, weights, provenance, and limitations](docs/model-and-data.md)**
-
-## Development
-
-Node 22 is used in CI. No package installation is needed for the application checks:
+The recommended setup is **one small Linux server with Docker Compose**, SQLite and Caddy for automatic HTTPS. A 4 GB server leaves room for the nationwide data cache and deployment builds. Budget roughly **CHF 5–10/month**, plus domain and backup storage; actual provider prices and taxes vary.
 
 ```sh
-node scripts/check_syntax.cjs
-node --test tests/*.test.cjs
-node scripts/package_site.cjs
+cp .env.example .env
+# Set DOMAIN to a hostname pointing to your server.
+docker compose up -d --build
 ```
 
-CI runs on pushes and pull requests. Tests use committed data and fixed dates, so they do not depend on external weather or map services.
+**[Deployment, upgrades and backups](docs/deployment.md)** · **[API reference](docs/api.md)** · **[Architecture](docs/architecture.md)**
 
-**[Data preparation, Python tools, CI, and project layout](docs/development.md)**
+No managed database, email provider or separate frontend hosting is needed. The free Open-Meteo endpoint is for non-commercial use; commercial deployments can set `OPEN_METEO_API_KEY`.
+
+### Static preview
+
+GitHub Pages and direct `index.html` previews still work for the map. Accounts and scheduled updates require the backend. Publish `_site/` or use Pages from `main` at the repository root. Static mode uses dated bundled weather with optional browser refresh; weather older than 48 hours is excluded from scoring.
+
+## Data and resolution
+
+| Region / source | Detail and limitations |
+| --- | --- |
+| Zürich: GIS-ZH surveys and DTM | 197,669 forest cells at 50 m; surveyed tree shares and canopy |
+| Other cantons: © swisstopo swissTLMRegio | Forest boundaries rasterized at 100 m; generalized regional mapping |
+| FOEN / WSL National Forest Inventory | 2023 tree mix from a 10 m raster, aggregated to cells; individual host-tree shares and canopy unavailable |
+| © swisstopo DHM25/200 | National elevation, slope and aspect from a 200 m source |
+| Open-Meteo | Regional weather anchors; interpolation does not add local measurements |
+
+Forest shape, terrain resolution, and weather resolution are different. Smaller cells do not establish equally precise mushroom forecasts. Protection coverage is incomplete throughout Switzerland.
+
+**[Model, provenance and limitations](docs/model-and-data.md)** · **[Data preparation](docs/development.md)**
+
+## Checks
+
+```sh
+npm run check
+npm test
+```
+
+CI checks the model, all regional data, authentication, privacy, persistence, weather caching and frontend assets. A separate job builds the deployment container, checks its health, restarts it, and verifies a SQLite backup. Tests use fixed dates and committed datasets.
 
 ## License
 
-Original application code, scripts, documentation, and artwork are **[MIT licensed](LICENSE)**. Third-party data and libraries keep their own licenses, including OpenStreetMap’s ODbL, Open-Meteo’s CC BY 4.0, and Leaflet’s BSD 2-Clause license.
-
-See **[third-party notices](THIRD_PARTY_NOTICES.md)** for attribution, data transformations, font sources, and service terms.
+Original code, scripts, documentation and artwork are **[MIT licensed](LICENSE)**. External data and libraries retain their own terms. See **[third-party notices](THIRD_PARTY_NOTICES.md)** for attribution and service restrictions.

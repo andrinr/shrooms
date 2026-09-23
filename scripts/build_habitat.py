@@ -1,4 +1,4 @@
-"""Prepare static 100 m forest cells from canton Zürich open geodata.
+"""Prepare static 50 m forest cells from canton Zürich open geodata.
 Run with .venv/bin/python scripts/build_habitat.py [--download].
 The deployed website needs none of these Python dependencies.
 """
@@ -74,10 +74,10 @@ forest_mask=(stand_ids>0)&land_mask
 usable=forest_mask
 projection=Transformer.from_crs(2056,4326,always_xy=True).transform
 cells=[]; weather=[]; weather_lookup={}
-print('Aggregating 100 m cells and forest masks…',flush=True)
-for row in range(0,dimensions[0],2):
- for col in range(0,dimensions[1],2):
-  section=np.s_[row:row+2,col:col+2]
+print('Aggregating 50 m cells and forest masks…',flush=True)
+for row in range(0,dimensions[0],1):
+ for col in range(0,dimensions[1],1):
+  section=np.s_[row:row+1,col:col+1]
   mask=usable[section]
   if np.count_nonzero(mask)<1: continue
   ids=stand_ids[section][mask]
@@ -136,7 +136,7 @@ def source_hash(path):
 
 metadata={
  'generated':datetime.datetime.now(datetime.timezone.utc).isoformat(),
- 'cellSizeMeters':100,'maskResolutionMeters':50,'terrainResolutionMeters':50,
+ 'cellSizeMeters':50,'maskResolutionMeters':50,'terrainResolutionMeters':50,
  'sourceStandCount':source_count,'usedStandCount':len(properties)-1,'cellCount':len(cells),
  'forestAreaKm2':round(float(np.count_nonzero(forest_mask)*0.0025),2),
  'mappedReserveForestAreaKm2':round(float(np.count_nonzero(forest_mask&reserve_mask)*0.0025),2),

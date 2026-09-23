@@ -33,3 +33,11 @@ API access has separate [service terms](https://open-meteo.com/en/terms), includ
 ## Fonts
 
 The stylesheet requests DM Sans and DM Serif Display through Google Fonts; font binaries are not bundled. Both font families use the SIL Open Font License 1.1. See the upstream [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans) and [DM Serif Display](https://github.com/google/fonts/tree/main/ofl/dmserifdisplay) directories for their notices. System fonts are used when the request is unavailable.
+
+## National Swiss data
+
+© swisstopo: **swissTLMRegio 2026** supplies forest boundaries, administrative boundaries, protected-area outlines, lakes, roads and places. **DHM25/200** supplies national terrain. Data are redistributed and transformed under the [swisstopo open-data terms](https://www.swisstopo.admin.ch/en/faq-free-geodata), including source attribution. Source geometry is generalized, rasterized or simplified; terrain gradients and habitat scores are derived by shrooms, not supplied or endorsed by swisstopo.
+
+**FOEN / WSL, Swiss National Forest Inventory (NFI), forest mix 2023** supplies modeled broadleaf percentages at 10 m, averaged to our forest grid. [Official layer metadata](https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bafu.landesforstinventar-waldmischungsgrad/legend). The layer is tree cover data, not a complete forest boundary or species inventory. Source attribution and terms remain applicable to derived regional bundles.
+
+Exact national downloads and checksums are listed in [data/national-sources.json](data/national-sources.json). Original source data are not relicensed under the application's MIT license. National screenshots and map exports should retain © swisstopo and FOEN / WSL attribution.

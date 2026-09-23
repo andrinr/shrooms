@@ -5,9 +5,12 @@ window.SHROOMS_LOAD = (() => {
   return function load(key) {
     if (pending.has(key)) return pending.get(key);
     const task = (async () => {
+      if(window.SHROOMS_SERVICE&&await window.SHROOMS_SERVICE.ready){
+        try{return await window.SHROOMS_SERVICE.request(`data/${key}?v=20260923c`);}catch(error){console.warn('Using bundled map data after API failure.');}
+      }
       await new Promise((resolve,reject) => {
         const script=document.createElement('script');
-        script.src=`./data/${key}.js`;
+        script.src=`./data/${key}.js?v=20260923c`;
         const timer=setTimeout(()=>{script.remove();reject(new Error(`Timed out loading ${key}`));},15000);
         script.onload=()=>{clearTimeout(timer);script.remove();resolve();};
         script.onerror=()=>{clearTimeout(timer);script.remove();reject(new Error(`Could not load ${key}`));};

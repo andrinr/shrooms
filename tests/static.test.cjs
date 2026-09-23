@@ -7,7 +7,7 @@ function loader(){
  context.document={createElement:()=>({remove(){}}),head:{appendChild(script){
   requests.push(script.src);
   queueMicrotask(()=>{
-   try{vm.runInContext(fs.readFileSync(script.src,'utf8'),context);script.onload();}
+   try{vm.runInContext(fs.readFileSync(script.src.split('?')[0],'utf8'),context);script.onload();}
    catch{script.onerror();}
   });
  }}};

@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-18T15:05:48.624625+00:00",
-  "cellSizeMeters": 100,
+  "generated": "2026-09-23T15:39:41.554113+00:00",
+  "cellSizeMeters": 50,
   "maskResolutionMeters": 50,
   "terrainResolutionMeters": 50,
   "sourceStandCount": 95716,
   "usedStandCount": 92866,
-  "cellCount": 64500,
+  "cellCount": 197669,
   "forestAreaKm2": 494.17,
   "mappedReserveForestAreaKm2": 41.91,
   "sources": {

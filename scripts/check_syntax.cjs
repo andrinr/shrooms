@@ -7,5 +7,5 @@ function check(directory){
   else if(/\.(js|cjs)$/.test(file)){new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});count++;}
  }
 }
-for(const directory of ['src','scripts','tests','data','vendor'])check(directory);
+for(const directory of ['server','src','scripts','tests','data','vendor'])check(directory);
 console.log(`Syntax valid: ${count} JavaScript files`);

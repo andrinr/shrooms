@@ -43,13 +43,13 @@ test('weather aggregation excludes today and future forecasts',()=>{
  item.daily.precipitation_sum[0]=null;assert.equal(weather.parse(item,'2026-09-18').rain14,null);
 });
 test('all generated cells have valid, bounded source values and scores',()=>{
- assert.equal(data.features.length,data.metadata.cellCount);assert.ok(data.features.length>49000);assert.equal(data.metadata.cellSizeMeters,100);
+ assert.equal(data.features.length,data.metadata.cellCount);assert.ok(data.features.length>49000);assert.equal(data.metadata.cellSizeMeters,50);
  assert.ok(Math.abs(data.cells.reduce((sum,c)=>sum+c.area/100,0)-data.metadata.forestAreaKm2)<0.01,'Fine grid preserves the mapped forest area');
  const ids=new Set();
  for(const feature of data.features){
   const c=feature.properties;assert.ok(!ids.has(c.id));ids.add(c.id);
   assert.ok(c.lat>47.1&&c.lat<47.8&&c.lon>8.2&&c.lon<9.1);
-  assert.ok(c.area>=.25&&c.area<=1);assert.ok(c.forest>=0&&c.forest<=100);
+  assert.ok(c.area===.25);assert.ok(c.forest>=0&&c.forest<=100);
   assert.ok(c.weather>=0&&c.weather<data.weatherPoints.length);
   assert.ok(c.slope===null||(c.slope>=0&&c.slope<90));
   for(const s of Object.values(species)){
@@ -68,7 +68,7 @@ test('weather snapshots reject stale, future, incomplete and mismatched grids',(
 });
 test('compressed assets retain all source geometry and fit small chunks',()=>{
  assert.equal(new Set(data.features.map(f=>f.properties.id)).size,data.cells.length);
- for(const tile of data.tiles)assert.ok(tile.bytes<30000);
+ for(const tile of data.tiles)assert.ok(tile.bytes<40000);
 });
 
 test('saffron milkcap distinguishes pine from other conifers and omits unknown pine',()=>{

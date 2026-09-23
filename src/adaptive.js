@@ -1,4 +1,4 @@
-/* Area-weighted display summaries; the underlying model stays at 100 m. */
+/* Area-weighted display summaries; the underlying regional model is unchanged. */
 (function () {
   const resolution=zoom=>zoom<=10?1000:zoom<=11?500:100;
   function group(cells,meters){

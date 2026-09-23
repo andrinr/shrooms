@@ -30,19 +30,30 @@
       Array.isArray(snapshot.entries) && snapshot.entries.length===points.length &&
       snapshot.entries.every(([id,w],i)=>id===i && w && Object.values(w).some(known));
   }
-  // Inverse-distance interpolation of regional inputs, not fine-scale measurements.
+  // Smooth compact-distance weights; cache geometry independently of observations.
+  const coordinateCache=new WeakMap(),weightCache=new WeakMap();
   function interpolate(cell,points,entries){
+    let coordinates=coordinateCache.get(points);
+    if(!coordinates){coordinates=points.map(p=>p.id.split(':').map(Number));coordinateCache.set(points,coordinates);}
+    let cached=weightCache.get(cell);
+    if(!cached||cached.points!==points){
+      const weights=[];let closest=null;
+      coordinates.forEach(([x,y],i)=>{
+        const distance2=(cell.x-x)**2+(cell.y-y)**2,distance=Math.sqrt(distance2);
+        if(!closest||distance2<closest[1])closest=[i,distance2];
+        if(distance<40000)weights.push([i,(1-distance/40000)**2/Math.max(1,distance2)]);
+      });
+      if(!weights.length&&closest)weights.push([closest[0],1]);
+      cached={points,weights};weightCache.set(cell,cached);
+    }
     const totals={},weights={};
-    points.forEach((point,i)=>{
-      const w=entries.get(i);if(!w)return;
-      const [x,y]=point.id.split(':').map(Number);
-      const distance2=(cell.x-x)**2+(cell.y-y)**2;
-      const weight=1/Math.max(1,distance2);
+    for(const [i,weight] of cached.weights){
+      const w=entries.get(i);if(!w)continue;
       for(const key of ['rain14','temp7','soil','humidity','sunHours7','et014']){
         if(!known(w[key]))continue;
         totals[key]=(totals[key]||0)+w[key]*weight;weights[key]=(weights[key]||0)+weight;
       }
-    });
+    }
     if(!Object.keys(weights).length)return undefined;
     return Object.fromEntries(['rain14','temp7','soil','humidity','sunHours7','et014'].map(key=>[key,weights[key]?totals[key]/weights[key]:null]));
   }

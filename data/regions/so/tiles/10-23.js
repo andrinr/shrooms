@@ -1,0 +1,1 @@
+window.SHROOMS_PACKED["regions/so/tiles/10-23"]="H4sIAAAAAAAC/6WOywrCMBQF/+WuY8nL5KZf4T5kITaUgjZSswml/24jFlGTjW7ncJixMwwdtMColDsuDAKB3oeLj1OCdoaYrn6dD+Gc+jCu4ymEqRvGY/Q3aK21upECFSdSNwIpE468I0Y3pEWNFG4ZObcs5NWn/u7ThhdFtZonKdwe6KMPc5/6pW/zoKib9war6PuXSc5zd0Kbmw/gAQAA";

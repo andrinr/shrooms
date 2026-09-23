@@ -1,10 +1,20 @@
 (async function () {
   const $=id=>document.getElementById(id);
+  const catalog=await window.SHROOMS_LOAD('regions');
+  const requested=new URLSearchParams(location.search).get('region')||'ch';
+  const region=catalog.regions.find(r=>r.id===requested)||catalog.regions[0];
+  window.SHROOMS_REGION=region.id;
+  $('region').innerHTML=catalog.regions.map(r=>`<option value="${r.id}">${r.name} · ${r.cellSizeMeters} m</option>`).join('');
+  $('region').value=region.id;
+  $('region').addEventListener('change',()=>{const url=new URL(location.href);url.searchParams.set('region',$('region').value);url.hash='explore';location.href=url;});
   let data;
-  try { data=await window.SHROOMS_LOAD('index'); } catch(error) { $('map').textContent='Forest data could not load. Please reload using a current browser.'; console.error(error); return; }
+  try { data=await window.SHROOMS_LOAD(region.index); } catch(error) { $('map').textContent='Forest data could not load. Please reload using a current browser.'; console.error(error); return; }
   const species=window.SHROOMS_SPECIES;
   if (!data) { $('map').textContent='The forest dataset could not load. Reload the page to try again.'; return; }
   const cells=data.cells;
+  const gridSize=data.metadata.cellSizeMeters;
+  const national=region.id!=='zh';
+  const basemap=national?await window.SHROOMS_LOAD('switzerland-map'):window.SHROOMS_BASEMAP;
   const byId=new Map(cells.map(c=>[c.id,{type:"Feature",properties:c}]));
   const loadedTiles=new Set();
   const overviewGroups=new Map([500,1000].map(size=>[size,window.SHROOMS_ADAPTIVE.group(cells,size)]));
@@ -20,8 +30,10 @@
   const scored=c=>state.scores.get(c.id);
   const label=v=>v>=70?'Stronger habitat signal':v>=45?'Moderate habitat signal':'Lower habitat signal';
   $('date-pill').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',day:'numeric',month:'short',year:'numeric'}).format(today).toUpperCase();
+  if(region.id==='zh'){
   $('collecting-title').textContent=Number(parts.day)<=10?'Closed season today':'Collect with care today';
   $('collecting-copy').textContent=Number(parts.day)<=10?'No mushroom collecting from the 1st through the 10th of each month in Zürich canton. You can still explore and observe.':'Maximum 1 kg per person per day. Collecting is prohibited in nature reserves; always check the rules at your location.';
+  }else{$('collecting-title').textContent='Check local collecting rules';$('collecting-copy').textContent='Rules differ across Switzerland. Check cantonal, municipal and protected-area restrictions. This habitat score does not establish collection permission.';}
   $('dataset-count').textContent=cells.length.toLocaleString('en');
 
   let interpolatedSource;
@@ -49,6 +61,7 @@
     state.selected=id;
     const feature=byId.get(id), c=feature.properties;
     renderDetail();renderList();
+    window.dispatchEvent(new CustomEvent('shrooms:selection',{detail:{...c,species:state.species,region:region.id}}));
     if(fly&&state.map)state.map.flyTo([c.lat,c.lon],13,{duration:.6});
     try { await loadTile(c.tile); } catch { return; }
     if(state.selected!==id)return;
@@ -81,7 +94,7 @@
     const aspect=known(c.aspect)?['N','NE','E','SE','S','SW','W','NW'][Math.round(c.aspect/45)%8]:'unknown';
     const sunCopy=w?`${number(w.sunHours7,' h sunshine / 7 days',1)} · ${number(w.et014,' mm reference evaporation / 14 days',1)}`:'Sunshine and drying data unavailable';
     const weatherCopy=w?`${number(w.rain14,' mm',1)} / 14 days · ${number(w.humidity,'% RH')} · ${number(w.soil,' m³/m³',2)} soil water`:'Weather unavailable; this factor is omitted.';
-    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${c.area} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div>${c.reservePercent>0?`<div class="detail-note"><span>COLLECTING MAY BE FORBIDDEN</span><p>This cell overlaps a mapped forest reserve. Check the official rules before collecting; the score describes habitat suitability only.</p></div>`:""}<div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% pine')} · mapped host tree`:s.host?`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`:`${c.forest}% forest coverage in this 100 m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of 100 m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>new Intl.DateTimeFormat('en',{month:'short'}).format(new Date(2024,m-1))).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Weather inputs blend regional anchors; they are not 100 m measurements. Sunshine is not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div><div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest survey ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · DTM 2022. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>100 m score, clipped to a 50 m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
+    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${c.area} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div>${c.reservePercent==null?`<div class="detail-note"><span>CHECK LOCAL PROTECTION RULES</span><p>Protection coverage is incomplete. Collecting may be forbidden in mapped areas and elsewhere. Check local rules before collecting.</p></div>`:c.reservePercent>0?`<div class="detail-note"><span>COLLECTING MAY BE FORBIDDEN</span><p>This cell overlaps a mapped forest reserve. Check the official rules before collecting; the score describes habitat suitability only.</p></div>`:""}<div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% pine')} · mapped host tree`:s.host?`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`:`${c.forest}% forest coverage in this ${gridSize} m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of ${gridSize} m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>new Intl.DateTimeFormat('en',{month:'short'}).format(new Date(2024,m-1))).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Weather inputs blend regional anchors; they are not local forest measurements. Sunshine is not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div><div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest source ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · terrain ${data.metadata.terrainResolutionMeters} m. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>${gridSize} m score · ${data.metadata.maskResolutionMeters} m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
   }
   function render() {
     $('species-latin').textContent=`${species[state.species].latin} · ${species[state.species].note}`;
@@ -99,10 +112,10 @@
   }
   function initMap() {
     if(!window.L){$('map').innerHTML='<div class="map-error">The map could not load. Reload to try again.</div>';return;}
-    state.map=L.map('map',{zoomControl:false,preferCanvas:true}).setView([47.43,8.65],10);
-    const base=window.SHROOMS_BASEMAP;
+    state.map=L.map('map',{zoomControl:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.5}).setView([47.43,8.65],10);
+    const base=basemap;
     if(base){
-      L.imageOverlay('./data/basemap.svg',base.bounds,{interactive:false,attribution:'Basemap, forest & terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(state.map);
+      L.imageOverlay(national?'./data/switzerland.svg':'./data/basemap.svg',base.bounds,{interactive:false,attribution:national?'© swisstopo; FOEN / WSL NFI':'Basemap, forest & terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(state.map);
       state.map.createPane('placeLabels');
       state.map.getPane('placeLabels').style.pointerEvents='none';
       const labels=L.layerGroup().addTo(state.map);
@@ -120,7 +133,7 @@
       };
       state.map.on('moveend',updateLabels);updateLabels();
       state.map.setMaxBounds(L.latLngBounds(base.bounds).pad(.15));
-      state.map.setMinZoom(8);state.map.setMaxZoom(16);
+      state.map.setMinZoom(6);state.map.setMaxZoom(16);
     }
 
     L.control.zoom({position:'bottomright'}).addTo(state.map);
@@ -140,7 +153,8 @@
   function updateResolution() {
     if(!state.map||!state.overview)return;
     const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
-    document.querySelector('.heatmap-caption').textContent=size===100?'Offline basemap · 100 m forest scores':`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for 100 m detail`;
+    document.querySelector('.heatmap-caption').textContent=size===100?`Offline basemap · ${gridSize} m forest scores`:`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
+    state.map.getPane('overviewHeat').style.setProperty('--heat-blur',state.map.getZoom()<9?'1px':'3px');
     state.map.getPane('overviewHeat').classList.toggle('soft-heat',state.mode==='heat');
     state.overview.clearLayers();
     if(size===100){
@@ -151,7 +165,7 @@
     for(const group of overviewGroups.get(size)){
       const summary=window.SHROOMS_ADAPTIVE.summarize(group,state.scores);
       const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
-      const center=state.map.project([summary.lat,summary.lon]),half=size===1000?5:4.5;
+      const center=state.map.project([summary.lat,summary.lon]),half=Math.min(size===1000?5:4.5,Math.max(1.3,5*2**(state.map.getZoom()-10)));
       const bounds=L.latLngBounds(state.map.unproject(center.subtract([half,half])),state.map.unproject(center.add([half,half])));
       L.rectangle(bounds,{renderer:state.overviewRenderer,stroke:false,fillColor:color,fillOpacity:state.mode==='heat'?.78:.9})
         .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to zoom`,{sticky:true})
@@ -164,7 +178,7 @@
     $('protection-status').textContent='Loading reserve boundaries…';
     $('retry-protection').hidden=true;
     try {
-      const reserves=await window.SHROOMS_LOAD('protected');
+      const reserves=await window.SHROOMS_LOAD(national?'national-protected':'protected');
       const pane=state.map.getPane('protectedAreas')||state.map.createPane('protectedAreas');
       pane.style.zIndex=450;
       const renderer=L.svg({pane:'protectedAreas'}).addTo(state.map);
@@ -179,10 +193,10 @@
       stripes.setAttribute('d','M-2 2L2 -2M0 8L8 0M6 10L10 6');stripes.setAttribute('stroke','#863e25');stripes.setAttribute('stroke-width','1');stripes.setAttribute('stroke-opacity','.55');
       pattern.append(background,stripes);defs.append(pattern);svg.prepend(defs);
       L.geoJSON(reserves,{pane:'protectedAreas',renderer,style:{color:'#863e25',weight:1.5,fillColor:'url(#reserve-hatch)',fillOpacity:1},onEachFeature(feature,layer){
-        layer.bindTooltip(`${escape(feature.properties.name)} · protected forest reserve`,{sticky:true});
-        layer.bindPopup(`<div class="reserve-popup"><strong>${escape(feature.properties.name)}</strong><p>Protected forest reserve</p><p>Collecting may be forbidden here. Habitat scores describe growing conditions, not permission to collect. Check the official reserve rules before collecting.</p><small>GIS-ZH Waldreservate · ${escape(feature.properties.id)}. Boundaries simplified for display; other protections may apply outside this layer.</small><p><a href="https://maps.zh.ch/" target="_blank" rel="noopener noreferrer">Check the official GIS-ZH map ↗</a></p></div>`);
+        layer.bindTooltip(`${escape(feature.properties.name)} · mapped protected area`,{sticky:true});
+        layer.bindPopup(`<div class="reserve-popup"><strong>${escape(feature.properties.name)}</strong><p>Mapped protected area</p><p>Collecting may be forbidden here. Habitat scores describe growing conditions, not permission to collect. Check the official reserve rules before collecting.</p><small>${escape(feature.properties.source||'GIS-ZH Waldreservate')} · ${escape(feature.properties.id)}. Boundaries simplified for display; other protections may apply outside this layer.</small><p><a href="${national?'https://map.geo.admin.ch/':'https://maps.zh.ch/'}" target="_blank" rel="noopener noreferrer">Check the official map ↗</a></p></div>`);
       }}).addTo(state.map);
-      $('protection-status').textContent=`${reserves.features.length} reserves · collecting may be forbidden in hatched areas`;
+      $('protection-status').textContent=`${reserves.features.length} mapped areas · collecting may be forbidden in hatched areas`;
     }catch(error){
       $('protection-status').textContent='Reserve boundaries unavailable — protection coverage is not shown.';
       $('retry-protection').hidden=false;
@@ -207,9 +221,19 @@
     }));
     $('geometry-status').hidden=!failed;
   }
+  async function serverWeather(){
+    const payload=await window.SHROOMS_SERVICE.request(`weather?region=${region.id}`);
+    if(window.SHROOMS_WEATHER.usable(payload.snapshot,data.weatherPoints,new Date())){
+      state.weather=new Map(payload.snapshot.entries);state.status='snapshot';state.weatherDay=payload.snapshot.day;
+    }else{state.weather=new Map();state.status='offline';}
+    recompute();
+  }
   async function initialWeather() {
+    if(window.SHROOMS_SERVICE&&await window.SHROOMS_SERVICE.ready){
+      try{await serverWeather();return;}catch{console.warn('Shared weather unavailable; trying bundled snapshot.');}
+    }
     try {
-      const snapshot=await window.SHROOMS_LOAD('weather');
+      const snapshot=await window.SHROOMS_LOAD(national?'national-weather':'weather');
       if(window.SHROOMS_WEATHER.usable(snapshot,data.weatherPoints,today)){
         state.weather=new Map(snapshot.entries);state.status='snapshot';state.weatherDay=snapshot.day;
       }else state.status='offline';
@@ -222,6 +246,11 @@
     recompute();
   }
   async function loadWeather(force=false) {
+    if(window.SHROOMS_SERVICE&&await window.SHROOMS_SERVICE.ready){
+      $('refresh-weather').disabled=true;
+      try{await serverWeather();}catch{$('map-status').textContent='Shared weather unavailable. Try again later.';}
+      finally{$('refresh-weather').disabled=false;}return;
+    }
     const cacheKey='shrooms-weather-v3';
     const gridKey=data.weatherPoints.map(point=>point.id).join('|');
     if(!force)try{
@@ -257,5 +286,7 @@
   $('points-mode').addEventListener('click',()=>mapMode('forest'));
   $('refresh-weather').addEventListener('click',()=>loadWeather(true));
   $('retry-protection').addEventListener('click',loadProtected);
-  recompute();initMap();loadProtected();initialWeather();
+  window.SHROOMS_SELECTED=()=>({...byId.get(state.selected).properties,species:state.species,region:region.id});
+  window.addEventListener('shrooms:open-spot',event=>{const spot=event.detail;if(spot.species&&species[spot.species]){$('species').value=spot.species;state.species=spot.species;recompute();}const id=spot.cellId?.split(':').slice(1).join(':');if(byId.has(id))select(id);else state.map.setView([spot.lat,spot.lon],14);});
+  recompute();initMap();loadProtected();initialWeather();window.dispatchEvent(new Event('shrooms:ready'));
 })();
