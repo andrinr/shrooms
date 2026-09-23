@@ -20,6 +20,10 @@
   const loadedTiles=new Set();
   const overviewGroups=new Map([500,1000].map(size=>[size,window.SHROOMS_ADAPTIVE.group(cells,size)]));
   const state={species:'porcini',selected:null,map:null,layer:null,selection:null,mode:'heat',weather:new Map(),scores:new Map(),status:'loading',search:'',updated:null};
+  let rankedCells=[];
+  const overviewSummaries=new Map(),overviewLayers=new Map();
+  let overviewSize=null,overviewZoom=null;
+  function invalidateOverview(){overviewSummaries.clear();overviewLayers.clear();state.overview?.clearLayers();overviewSize=null;}
   const today=new Date();
   const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(today).map(p=>[p.type,p.value]));
   const todayKey=`${parts.year}-${parts.month}-${parts.day}`;
@@ -48,10 +52,12 @@
       interpolatedSource=state.weather;
     }
     cells.forEach(c=>state.scores.set(c.id,window.SHROOMS_SCORE.score(c,species[state.species],cellWeather.get(c.id),today)));
+    rankedCells=[...cells].sort((a,b)=>scored(b).value-scored(a).value);
+    invalidateOverview();
     heatScale=window.SHROOMS_HEAT_SCALE([...state.scores.values()].map(s=>s.value));
     $('heat-low').textContent=`≤ ${heatScale.low} / 100`;
     $('heat-high').textContent=`≥ ${heatScale.high} / 100`;
-    if (!state.selected) state.selected=[...cells].sort((a,b)=>scored(b).value-scored(a).value)[0].id;
+    if (!state.selected) state.selected=rankedCells[0].id;
     state.layer?.setStyle(feature=>cellStyle(feature));
     render();updateResolution();
   }
@@ -75,8 +81,9 @@
   }
   function renderList() {
     const query=state.search.toLocaleLowerCase();
-    const visible=cells.filter(c=>query?c.name.toLocaleLowerCase().includes(query):!state.map||state.map.getBounds().contains([c.lat,c.lon]));
-    visible.sort((a,b)=>scored(b).value-scored(a).value);
+    const bounds=state.map?.getBounds();
+    const south=bounds?.getSouth(),north=bounds?.getNorth(),west=bounds?.getWest(),east=bounds?.getEast();
+    const visible=rankedCells.filter(c=>query?c.name.toLocaleLowerCase().includes(query):!bounds||(c.lat>=south&&c.lat<=north&&c.lon>=west&&c.lon<=east));
     const picks=[];
     for(const cell of visible){
       if(picks.every(p=>Math.hypot(p.x-cell.x,p.y-cell.y)>=1600))picks.push(cell);
@@ -105,7 +112,7 @@
     renderList();renderDetail();
   }
   function mapMode(mode) {
-    state.mode=mode;
+    state.mode=mode;invalidateOverview();
     $('legend-title').textContent=mode==='heat'?'HABITAT SIGNAL':'FOREST TYPE';
     $('heatmap-mode').setAttribute('aria-pressed',String(mode==='heat'));
     $('points-mode').setAttribute('aria-pressed',String(mode==='forest'));
@@ -190,23 +197,35 @@
     if(!state.map||!state.overview)return;
     const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
     document.querySelector('.heatmap-caption').textContent=size===100?`Offline basemap · ${gridSize} m forest scores`:`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
-    state.overview.clearLayers();
     if(size===100){
       state.map.removeLayer(state.overview);state.layer.addTo(state.map);
       return;
     }
     state.map.removeLayer(state.layer);state.overview.addTo(state.map);
-    for(const group of overviewGroups.get(size)){
-      const summary=window.SHROOMS_ADAPTIVE.summarize(group,state.scores);
-      const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
-      const center=state.map.project([summary.lat,summary.lon]),half=Math.min(size===1000?5:4.5,Math.max(1.3,5*2**(state.map.getZoom()-10)));
+    if(overviewSize!==size){state.overview.clearLayers();overviewLayers.clear();overviewSize=size;}
+    if(!overviewSummaries.has(size))overviewSummaries.set(size,overviewGroups.get(size).map(group=>window.SHROOMS_ADAPTIVE.summarize(group,state.scores)));
+    const zoom=state.map.getZoom(),resized=zoom!==overviewZoom;
+    overviewZoom=zoom;
+    const viewport=state.map.getBounds().pad(.15),wanted=new Set();
+    const half=Math.min(size===1000?5:4.5,Math.max(1.3,5*2**(zoom-10)));
+    overviewSummaries.get(size).forEach((summary,key)=>{
+      if(!viewport.contains([summary.lat,summary.lon]))return;
+      wanted.add(key);
+      const existing=overviewLayers.get(key);
+      if(existing&&!resized)return;
+      const center=state.map.project([summary.lat,summary.lon]);
       const bounds=L.latLngBounds(state.map.unproject(center.subtract([half,half])),state.map.unproject(center.add([half,half])));
-      L.rectangle(bounds,{renderer:state.overviewRenderer,stroke:false,fillColor:color,fillOpacity:state.mode==='heat'?.78:.9})
+      if(existing){existing.setBounds(bounds);return;}
+      const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
+      const layer=L.rectangle(bounds,{renderer:state.overviewRenderer,stroke:false,fillColor:color,fillOpacity:state.mode==='heat'?.78:.9})
         .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to zoom`,{sticky:true})
         .on('click',()=>state.map.setView([summary.lat,summary.lon],size===1000?12:14))
         .addTo(state.overview);
-    }
+      overviewLayers.set(key,layer);
+    });
+    for(const [key,layer] of overviewLayers)if(!wanted.has(key)){state.overview.removeLayer(layer);overviewLayers.delete(key);}
   }
+
   async function loadProtected() {
     if(!state.map)return;
     $('protection-status').textContent='Loading reserve boundaries…';
