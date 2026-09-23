@@ -93,3 +93,11 @@ The catalog in `src/data.js` is shared by the frontend and API. Every profile li
 New profiles use European habitat references, including [winter chanterelle](https://www.first-nature.com/fungi/cantharellus-tubaeformis.php), [slippery jack](https://www.first-nature.com/fungi/suillus-luteus.php), [NDFF spruce milkcap ecology](https://www.verspreidingsatlas.nl/0069170) and [NDFF charcoal burner host observations](https://www.verspreidingsatlas.nl/biodiversiteit/habitat-distribution.aspx?soortnummer=10126300). Source seasons from other countries are context, not validated Swiss phenology. Temperature bands, host coefficients and canopy choices are provisional hypotheses. No empirical calibration is implied by these links.
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) to propose a species or implement a new data-backed indicator. CI rejects unsupported fields, invalid ranges, missing sources and incomplete translations.
+
+## Nationwide cartography
+
+All regions now use the same zoom-dependent swisstopo national map by default. The grey XYZ layer selects the appropriate cartographic scale, revealing local roads, paths, buildings and contour detail as you zoom. A blended duplicate above the habitat layer keeps dark map features legible; protected-area boundaries stay above it. The duplicate uses identical URLs and normal browser caching. The “Roads & names on top” checkbox hides this upper copy.
+
+Only visible tiles plus a small pan buffer are requested, after zoom settles. No API key, backend tile proxy or paid map subscription is needed. Tile errors switch to the existing bundled basemap; selecting Swiss topo map retries. Bundled-map mode is available explicitly, including for offline use. Map requests go directly to swisstopo and reveal the viewed area. Source terms and attribution are in the third-party notices.
+
+This removes the Zürich/non-Zürich **cartographic** detail gap while online. It does not upgrade habitat measurements: Zürich scores still use 50 m cells and surveyed tree shares; other cantons retain 100 m cells and coarser/missing inputs, and the Swiss overview remains 500 m.

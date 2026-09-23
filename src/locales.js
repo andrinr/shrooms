@@ -13,6 +13,11 @@ Your location is outside the Swiss map coverage.|Dein Standort liegt ausserhalb 
 Location permission denied. Allow it in your browser to try again.|Standortzugriff verweigert. Erlaube ihn im Browser und versuche es erneut.|Accès à la position refusé. Autorisez-le dans votre navigateur pour réessayer.|Accesso alla posizione negato. Consentilo nel browser e riprova.|Access a la posiziun refusà. Permetta el en tes navigatur ed emprova danovamain.
 Location timed out. Please try again.|Zeitüberschreitung beim Standort. Bitte erneut versuchen.|Délai de localisation dépassé. Veuillez réessayer.|Tempo di localizzazione scaduto. Riprova.|Il temp per la posiziun è scadì. Emprova danovamain.
 Location unavailable. Please try again.|Standort nicht verfügbar. Bitte erneut versuchen.|Position indisponible. Veuillez réessayer.|Posizione non disponibile. Riprova.|Posiziun betg disponibla. Emprova danovamain.
+Background map|Hintergrundkarte|Fond de carte|Mappa di sfondo|Charta da fund
+Swiss topo map|Schweizer Landeskarte|Carte nationale suisse|Carta nazionale svizzera|Charta naziunala svizra
+Bundled offline map|Mitgelieferte Offline-Karte|Carte hors ligne intégrée|Mappa offline inclusa|Charta offline integrada
+Roads & names on top|Strassen & Namen darüber|Routes et noms au-dessus|Strade e nomi in primo piano|Vias e nums suravi
+Online map unavailable. Showing the bundled map; select Swiss topo map to retry.|Online-Karte nicht verfügbar. Die mitgelieferte Karte wird angezeigt; wähle die Schweizer Landeskarte, um es erneut zu versuchen.|Carte en ligne indisponible. La carte intégrée est affichée ; sélectionnez la carte nationale suisse pour réessayer.|Mappa online non disponibile. È mostrata la mappa inclusa; seleziona la carta nazionale svizzera per riprovare.|Charta online betg disponibla. La charta integrada vegn mussada; tscherna la charta naziunala svizra per empruvar danovamain.
 Language|Sprache|Langue|Lingua|Lingua
 shrooms — follow the fungi|shrooms — folge den Pilzen|shrooms — suivez les champignons|shrooms — segui i funghi|shrooms — suonda ils bulieus
 shrooms home|shrooms Startseite|Accueil shrooms|Pagina iniziale shrooms|Pagina iniziala shrooms

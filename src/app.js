@@ -124,12 +124,14 @@
     state.map=L.map('map',{zoomControl:false,preferCanvas:true,zoomSnap:.25,zoomDelta:.5}).setView([47.43,8.65],10);
     const base=basemap;
     if(base){
-      L.imageOverlay(national?'./data/switzerland.svg':'./data/basemap.svg',base.bounds,{interactive:false,attribution:national?'© swisstopo; FOEN / WSL NFI':'Basemap, forest & terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(state.map);
+      state.map.createPane('offlineBase').style.zIndex=190;
+      L.imageOverlay(national?'./data/switzerland.svg':'./data/basemap.svg',base.bounds,{pane:'offlineBase',interactive:false,attribution:national?'© swisstopo; FOEN / WSL NFI':'Basemap, forest & terrain: <a href="https://geolion.zh.ch/geodatensatz/347">GIS-ZH</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(state.map);
       state.map.createPane('placeLabels');
       state.map.getPane('placeLabels').style.pointerEvents='none';
       const labels=L.layerGroup().addTo(state.map);
       const updateLabels=()=>{
         labels.clearLayers();
+        if(state.onlineMap)return;
         const occupied=[];
         base.labels.filter(p=>p.minZoom<=state.map.getZoom()&&state.map.getBounds().contains([p.lat,p.lon])).forEach(p=>{
           const point=state.map.latLngToContainerPoint([p.lat,p.lon]);
@@ -140,6 +142,7 @@
           L.marker([p.lat,p.lon],{pane:'placeLabels',interactive:false,keyboard:false,icon:L.divIcon({className:`place-label place-${p.kind}`,html:`<span>${escape(p.name)}</span>`,iconSize:[0,0]})}).addTo(labels);
         });
       };
+      state.updateLabels=updateLabels;
       state.map.on('moveend',updateLabels);updateLabels();
       state.map.setMaxBounds(L.latLngBounds(base.bounds).pad(.15));
       state.map.setMinZoom(6);state.map.setMaxZoom(16);
@@ -192,11 +195,22 @@
     state.overviewRenderer=L.canvas({pane:'overviewHeat',padding:.2});
     state.overview=L.layerGroup();
     state.map.on('moveend',()=>{renderList();updateResolution();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
+    const tiledMap=window.SHROOMS_BASEMAP_TILES.mount(L,state.map,(online,failed)=>{
+      state.onlineMap=online;$('basemap-style').value=online?'online':'offline';
+      $('map-orientation').disabled=!online;
+      $('basemap-status').hidden=!failed;
+      $('basemap-status').textContent=failed?'Online map unavailable. Showing the bundled map; select Swiss topo map to retry.':'';
+      state.updateLabels?.();updateResolution();
+    });
+    $('basemap-style').addEventListener('change',()=>tiledMap.mode($('basemap-style').value==='online'));
+    $('map-orientation').addEventListener('change',()=>tiledMap.overlays($('map-orientation').checked));
+    tiledMap.mode(true);
+
   }
   function updateResolution() {
     if(!state.map||!state.overview)return;
     const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
-    document.querySelector('.heatmap-caption').textContent=size===100?`Offline basemap · ${gridSize} m forest scores`:`Offline basemap · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
+    document.querySelector('.heatmap-caption').textContent=size===100?`${state.onlineMap?'Swiss topo map':'Offline basemap'} · ${gridSize} m forest scores`:`${state.onlineMap?'Swiss topo map':'Offline basemap'} · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
     if(size===100){
       state.map.removeLayer(state.overview);state.layer.addTo(state.map);
       return;

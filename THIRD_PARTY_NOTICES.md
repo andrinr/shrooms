@@ -41,3 +41,9 @@ The stylesheet requests DM Sans and DM Serif Display through Google Fonts; font 
 **FOEN / WSL, Swiss National Forest Inventory (NFI), forest mix 2023** supplies modeled broadleaf percentages at 10 m, averaged to our forest grid. [Official layer metadata](https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bafu.landesforstinventar-waldmischungsgrad/legend). The layer is tree cover data, not a complete forest boundary or species inventory. Source attribution and terms remain applicable to derived regional bundles.
 
 Exact national downloads and checksums are listed in [data/national-sources.json](data/national-sources.json). Original source data are not relicensed under the application's MIT license. National screenshots and map exports should retain © swisstopo and FOEN / WSL attribution.
+
+## Online Swiss topographic map
+
+The optional online map loads `ch.swisstopo.pixelkarte-grau` tiles directly from swisstopo's [XYZ service](https://docs.geo.admin.ch/visualize-data/xyz.html). © swisstopo. The layer selects cartographic scales appropriate to zoom throughout Switzerland. A second, browser-cached copy is blended above the heatmap to keep roads, names and contours visible; this is a display treatment, not a separate roads dataset.
+
+Use is subject to [FSDI terms and fair use](https://www.geo.admin.ch/en/general-terms-of-use-fsdi) and swisstopo's applicable data terms. The app requests visible tiles on demand, with a small pan buffer, and does not bulk-download or proxy them. The bundled map remains available without this service. Tile requests disclose the viewed map area and normal request metadata to the provider; switching to the bundled map stops new online map requests.
