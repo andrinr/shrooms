@@ -17,5 +17,12 @@
     return {lat:mean(c=>c.lat),lon:mean(c=>c.lon),value:mean(c=>scores.get(c.id).value),
       treeKnown:mean(c=>c.treeKnown),conifer:mean(c=>c.conifer||0),broadleaf:mean(c=>c.broadleaf||0),count:cells.length};
   }
-  window.SHROOMS_ADAPTIVE={resolution,group,summarize};
+  function factors(cells,scores){
+    return Object.fromEntries(['tree','canopy','moisture','temperature','terrain','season'].map(key=>{
+      let sum=0,area=0;
+      for(const cell of cells){const value=scores.get(cell.id).factors[key].value;if(Number.isFinite(value)){sum+=value*cell.area;area+=cell.area;}}
+      return [key,area?sum/area:null];
+    }));
+  }
+  window.SHROOMS_ADAPTIVE={resolution,group,summarize,factors};
 })();

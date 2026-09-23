@@ -46,6 +46,7 @@
   let heatScale=window.SHROOMS_HEAT_SCALE([]);
   const scoreColor=value=>window.SHROOMS_COLOR(heatScale.normalize(value));
   function recompute() {
+    state.map?.closePopup();
     if(interpolatedSource!==state.weather){
       cellWeather.clear();
       if(state.weather.size)for(const c of cells)cellWeather.set(c.id,window.SHROOMS_WEATHER.interpolate(c,data.weatherPoints,state.weather));
@@ -59,7 +60,7 @@
     $('heat-high').textContent=`≥ ${heatScale.high} / 100`;
     if (!state.selected) state.selected=rankedCells[0].id;
     state.layer?.setStyle(feature=>cellStyle(feature));
-    render();updateResolution();
+    updateResolution();render();
   }
   function cellStyle(feature) {
     return {stroke:false,fillColor:state.mode==='heat'?scoreColor(scored(feature.properties).value):treeColor(feature.properties),fillOpacity:state.mode==='heat'?.35+.6*heatScale.normalize(scored(feature.properties).value)/100:.68};
@@ -112,7 +113,7 @@
     renderList();renderDetail();
   }
   function mapMode(mode) {
-    state.mode=mode;invalidateOverview();
+    state.map?.closePopup();state.mode=mode;invalidateOverview();
     $('legend-title').textContent=mode==='heat'?'HABITAT SIGNAL':'FOREST TYPE';
     $('heatmap-mode').setAttribute('aria-pressed',String(mode==='heat'));
     $('points-mode').setAttribute('aria-pressed',String(mode==='forest'));
@@ -194,7 +195,7 @@
     overviewPane.style.zIndex=410;
     state.overviewRenderer=L.canvas({pane:'overviewHeat',padding:.2});
     state.overview=L.layerGroup();
-    state.map.on('moveend',()=>{renderList();updateResolution();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
+    state.map.on('moveend',()=>{updateResolution();renderList();renderDetail();loadVisibleTiles();});all();loadVisibleTiles();select(state.selected,false);
     const tiledMap=window.SHROOMS_BASEMAP_TILES.mount(L,state.map,(online,failed)=>{
       state.onlineMap=online;$('basemap-style').value=online?'online':'offline';
       $('map-orientation').disabled=!online;
@@ -210,7 +211,19 @@
   function updateResolution() {
     if(!state.map||!state.overview)return;
     const size=window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom());
+    state.map.getPane('overviewHeat').style.display=size===100?'none':'';
     document.querySelector('.heatmap-caption').textContent=size===100?`${state.onlineMap?'Swiss topo map':'Offline basemap'} · ${gridSize} m forest scores`:`${state.onlineMap?'Swiss topo map':'Offline basemap'} · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
+    const visibleBounds=state.map.getBounds();
+    if(size!==100&&!overviewSummaries.has(size))overviewSummaries.set(size,overviewGroups.get(size).map(group=>window.SHROOMS_ADAPTIVE.summarize(group,state.scores)));
+    const displayed=size===100?cells:overviewSummaries.get(size);
+    const south=visibleBounds.getSouth(),north=visibleBounds.getNorth(),west=visibleBounds.getWest(),east=visibleBounds.getEast();
+    const values=displayed.filter(c=>c.lat>=south&&c.lat<=north&&c.lon>=west&&c.lon<=east).map(c=>size===100?scored(c).value:c.value);
+    const nextScale=window.SHROOMS_HEAT_SCALE(values);
+    const scaleChanged=nextScale.low!==heatScale.low||nextScale.high!==heatScale.high;
+    heatScale=nextScale;
+    $('heat-low').textContent=`≤ ${Math.round(heatScale.low)} / 100`;
+    $('heat-high').textContent=`≥ ${Math.round(heatScale.high)} / 100`;
+    if(scaleChanged&&state.mode==='heat')state.layer.setStyle(cellStyle);
     if(size===100){
       state.map.removeLayer(state.overview);state.layer.addTo(state.map);
       return;
@@ -226,18 +239,30 @@
       if(!viewport.contains([summary.lat,summary.lon]))return;
       wanted.add(key);
       const existing=overviewLayers.get(key);
+      if(existing&&scaleChanged&&state.mode==='heat')existing.setStyle({fillColor:scoreColor(summary.value)});
       if(existing&&!resized)return;
       const center=state.map.project([summary.lat,summary.lon]);
       const bounds=L.latLngBounds(state.map.unproject(center.subtract([half,half])),state.map.unproject(center.add([half,half])));
       if(existing){existing.setBounds(bounds);return;}
       const color=state.mode==='heat'?scoreColor(summary.value):treeColor(summary);
       const layer=L.rectangle(bounds,{renderer:state.overviewRenderer,stroke:false,fillColor:color,fillOpacity:state.mode==='heat'?.78:.9})
-        .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to zoom`,{sticky:true})
-        .on('click',()=>state.map.setView([summary.lat,summary.lon],size===1000?12:14))
+        .bindTooltip(`${size===1000?'1 km':'500 m'} forest summary · ${Math.round(summary.value)}/100<br>Area-weighted mean of ${summary.count} cells · click to inspect`,{sticky:true})
+        .on('click',()=>showSummary(overviewGroups.get(size)[key],summary,size))
         .addTo(state.overview);
       overviewLayers.set(key,layer);
     });
     for(const [key,layer] of overviewLayers)if(!wanted.has(key)){state.overview.removeLayer(layer);overviewLayers.delete(key);}
+  }
+
+  function showSummary(group,summary,size){
+    const t=window.SHROOMS_I18N.t;
+    const names={tree:'Tree partners',canopy:'Canopy & forest coverage',moisture:'Moisture',temperature:'Temperature',terrain:'Slope & aspect',season:'Season'};
+    const factors=window.SHROOMS_ADAPTIVE.factors(group,state.scores);
+    const rows=Object.entries(names).map(([key,name])=>`<tr><td>${escape(t(name))}</td><td>${factors[key]===null?'—':Math.round(factors[key]*100)+'/100'}</td></tr>`).join('');
+    const content=document.createElement('div');content.className='summary-popup';
+    content.innerHTML=`<strong>${escape(t('{size} forest summary').replace('{size}',size===1000?'1 km':'500 m'))}</strong><p>${escape(t(species[state.species].name))} · ${Math.round(summary.value)}/100</p><p>${escape(t('Area-weighted mean of {count} cells').replace('{count}',summary.count))}</p><table>${rows}</table><p>${escape(t('Missing factors are omitted. Summary factors average only cells with data.'))}</p><button type="button">${escape(t('Zoom to forest cells'))}</button>`;
+    content.querySelector('button').addEventListener('click',()=>{state.map.closePopup();state.map.setView([summary.lat,summary.lon],size===1000?12:14);});
+    L.popup().setLatLng([summary.lat,summary.lon]).setContent(content).openOn(state.map);
   }
 
   async function loadProtected() {
@@ -247,7 +272,7 @@
     try {
       const reserves=await window.SHROOMS_LOAD(national?'national-protected':'protected');
       const pane=state.map.getPane('protectedAreas')||state.map.createPane('protectedAreas');
-      pane.style.zIndex=450;
+      pane.style.zIndex=450;pane.style.pointerEvents='none';
       const renderer=L.svg({pane:'protectedAreas'}).addTo(state.map);
       const svg=pane.querySelector('svg');
       const ns='http://www.w3.org/2000/svg';
@@ -259,7 +284,7 @@
       const stripes=document.createElementNS(ns,'path');
       stripes.setAttribute('d','M-2 2L2 -2M0 8L8 0M6 10L10 6');stripes.setAttribute('stroke','#863e25');stripes.setAttribute('stroke-width','1');stripes.setAttribute('stroke-opacity','.55');
       pattern.append(background,stripes);defs.append(pattern);svg.prepend(defs);
-      L.geoJSON(reserves,{pane:'protectedAreas',renderer,style:{color:'#863e25',weight:1.5,fillColor:'url(#reserve-hatch)',fillOpacity:1},onEachFeature(feature,layer){
+      L.geoJSON(reserves,{pane:'protectedAreas',renderer,interactive:false,style:{color:'#863e25',weight:1.5,fillColor:'url(#reserve-hatch)',fillOpacity:1},onEachFeature(feature,layer){
         layer.bindTooltip(`${escape(feature.properties.name)} · mapped protected area`,{sticky:true});
         layer.bindPopup(`<div class="reserve-popup"><strong>${escape(feature.properties.name)}</strong><p>Mapped protected area</p><p>Collecting may be forbidden here. Habitat scores describe growing conditions, not permission to collect. Check the official reserve rules before collecting.</p><small>${escape(feature.properties.source||'GIS-ZH Waldreservate')} · ${escape(feature.properties.id)}. Boundaries simplified for display; other protections may apply outside this layer.</small><p><a href="${national?'https://map.geo.admin.ch/':'https://maps.zh.ch/'}" target="_blank" rel="noopener noreferrer">Check the official map ↗</a></p></div>`);
       }}).addTo(state.map);

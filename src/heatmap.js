@@ -8,7 +8,7 @@
     const t=(value-low)/(high-low);
     return `rgb(${a.map((channel,i)=>Math.round(channel+(b[i]-channel)*t)).join(',')})`;
   };
-  // Canton-wide endpoints stay fixed while panning. A minimum span avoids
+  // Viewport endpoints follow the displayed tiles. A minimum span avoids
   // exaggerating tiny differences when all cells have nearly equal scores.
   window.SHROOMS_HEAT_SCALE = values => {
     const sorted=values.filter(Number.isFinite).sort((a,b)=>a-b);

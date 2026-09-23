@@ -12,3 +12,10 @@ test('overview groups preserve all cells and weight scores by actual forest area
  const summary=adaptive.summarize(groups[0],scores);assert.equal(summary.value,68);assert.equal(summary.conifer,80);assert.equal(summary.count,2);
  scores.set('0-0',{value:30});assert.equal(adaptive.summarize(groups[0],scores).value,28);
 });
+test('summary factors weight forest area and omit missing values rather than treating them as zero',()=>{
+ const cells=[{id:'a',area:3},{id:'b',area:1}];
+ const keys=['tree','canopy','moisture','temperature','terrain','season'];
+ const scores=new Map([['a',{factors:Object.fromEntries(keys.map(k=>[k,{value:k==='moisture'?null:.8}]))}],['b',{factors:Object.fromEntries(keys.map(k=>[k,{value:k==='moisture'?null:.4}]))}]]);
+ const result=adaptive.factors(cells,scores);assert.ok(Math.abs(result.tree-.7)<1e-10);assert.equal(result.moisture,null);
+ scores.get('b').factors.tree.value=null;assert.ok(Math.abs(adaptive.factors(cells,scores).tree-.8)<1e-10);
+});
