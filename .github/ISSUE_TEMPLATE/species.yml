@@ -1,0 +1,35 @@
+name: Suggest a mushroom species
+description: Propose a species without writing code. English, German, French, Italian or Romansh welcome.
+title: "Species: "
+body:
+  - type: input
+    id: species
+    attributes:
+      label: Scientific name and common names
+      description: Include synonyms if relevant. Scientific names avoid ambiguity between languages.
+    validations:
+      required: true
+  - type: textarea
+    id: ecology
+    attributes:
+      label: Habitat and indicators
+      description: Host trees, forest type, season, moisture, soil, substrate and regional variation. Distinguish observations from guesses.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sources
+      description: Link ecological publications, official inventories or authored field guides. Include pages/DOIs for books and explain which claim each source supports.
+    validations:
+      required: true
+  - type: textarea
+    id: gaps
+    attributes:
+      label: Missing data and uncertainty
+      description: Which important indicators are unavailable in shrooms? Do not post precise private collecting locations.
+  - type: textarea
+    id: translations
+    attributes:
+      label: Optional translations
+      description: Names and a short habitat note in any of our five languages are welcome. You do not need to know every language to suggest a species.

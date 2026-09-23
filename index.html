@@ -9,20 +9,20 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://api.open-meteo.com" />
   <link rel="stylesheet" href="./vendor/leaflet.css" />
-  <link rel="stylesheet" href="./styles.css?v=20260923h" />
+  <link rel="stylesheet" href="./styles.css?v=20260923i" />
   <script defer src="./vendor/leaflet.js"></script>
   <script defer src="./data/basemap.js"></script>
-  <script defer src="./src/locales.js?v=20260923h"></script>
-  <script defer src="./src/i18n.js?v=20260923h"></script>
-  <script defer src="./src/service.js?v=20260923h"></script>
-  <script defer src="./src/loader.js?v=20260923h"></script>
-  <script defer src="./src/data.js?v=20260923h"></script>
-  <script defer src="./src/scoring.js?v=20260923h"></script>
-  <script defer src="./src/weather.js?v=20260923h"></script>
-  <script defer src="./src/heatmap.js?v=20260923h"></script>
-  <script defer src="./src/adaptive.js?v=20260923h"></script>
-  <script defer src="./src/app.js?v=20260923h"></script>
-  <script defer src="./src/account.js?v=20260923h"></script>
+  <script defer src="./src/locales.js?v=20260923i"></script>
+  <script defer src="./src/i18n.js?v=20260923i"></script>
+  <script defer src="./src/service.js?v=20260923i"></script>
+  <script defer src="./src/loader.js?v=20260923i"></script>
+  <script defer src="./src/data.js?v=20260923i"></script>
+  <script defer src="./src/scoring.js?v=20260923i"></script>
+  <script defer src="./src/weather.js?v=20260923i"></script>
+  <script defer src="./src/heatmap.js?v=20260923i"></script>
+  <script defer src="./src/adaptive.js?v=20260923i"></script>
+  <script defer src="./src/app.js?v=20260923i"></script>
+  <script defer src="./src/account.js?v=20260923i"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -42,7 +42,7 @@
       <div class="section-heading"><div><div class="kicker">01 / READ THE FOREST</div><h2>Where the conditions come together.</h2><p>Choose a mushroom. Zoom from regional summaries into regional forest detail. Click a forest patch to see its evidence.</p></div><div class="date-pill" id="date-pill"></div></div>
       <div class="explorer-grid">
         <aside class="sidebar">
-          <div class="sidebar-head"><label for="region">EXPLORE A REGION</label><select id="region" aria-label="Map region"></select><label for="species">On your radar</label><select id="species" aria-label="Mushroom species"><option value="porcini">Porcini · Boletus edulis</option><option value="chanterelle">Chanterelle · Cantharellus cibarius</option><option value="horn">Horn of plenty · Craterellus cornucopioides</option><option value="parasol">Parasol · Macrolepiota procera</option></select><div class="species-latin" id="species-latin"></div><label class="search-label" for="place-search">Find a municipality</label><input id="place-search" type="search" placeholder="e.g. Winterthur" autocomplete="off" /></div>
+          <div class="sidebar-head"><label for="region">EXPLORE A REGION</label><select id="region" aria-label="Map region"></select><label for="species">On your radar</label><select id="species" aria-label="Mushroom species"><option value="porcini">Porcini · Boletus edulis</option><option value="chanterelle">Chanterelle · Cantharellus cibarius</option><option value="horn">Horn of plenty · Craterellus cornucopioides</option><option value="parasol">Parasol · Macrolepiota procera</option></select><div class="species-latin" id="species-latin"></div><details class="species-evidence" id="species-evidence"></details><label class="search-label" for="place-search">Find a municipality</label><input id="place-search" type="search" placeholder="e.g. Winterthur" autocomplete="off" /></div>
           <div class="sidebar-row"><span>PROMISING CELLS</span><span id="result-count"></span></div><div id="site-list" class="site-list" aria-label="Ranked forest cells"></div>
           <p class="sidebar-note">Ranked from the visible map. Searching a municipality looks across this region.</p>
         </aside>

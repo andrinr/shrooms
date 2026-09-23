@@ -1,0 +1,23 @@
+name: Suggest a habitat indicator
+description: Propose data or a model improvement such as soil acidity, deadwood or host-tree coverage.
+title: "Indicator: "
+body:
+  - type: textarea
+    id: effect
+    attributes:
+      label: Indicator and ecological effect
+      description: Which species are affected? What evidence supports the direction of the effect?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Dataset and reuse terms
+      description: Link the source, license, coverage, units, resolution, date and update frequency. Explain what missing values mean.
+    validations:
+      required: true
+  - type: textarea
+    id: model
+    attributes:
+      label: Proposed model behavior
+      description: Response curve or hypothesis, missing-data behavior, possible double counting, and how to validate it. It is fine to leave implementation to maintainers.

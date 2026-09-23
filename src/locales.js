@@ -290,3 +290,26 @@ Invalid JSON.|Ungültige Anfrage.|Demande invalide.|Richiesta non valida.|Dumond
 Unknown species.|Unbekannte Pilzart.|Espèce inconnue.|Specie sconosciuta.|Spezia nunenconuschenta.
 shrooms maps mushroom habitat across Switzerland using forest composition, canopy, slope and weather.|shrooms kartiert Pilzhabitate in der Schweiz anhand von Baumarten, Kronendeckung, Neigung und Wetter.|shrooms cartographie les habitats de champignons en Suisse à partir des essences, du couvert, de la pente et de la météo.|shrooms mappa gli habitat dei funghi in Svizzera usando composizione forestale, copertura, pendenza e meteo.|shrooms cartografescha habitats da bulieus en Svizra cun plantas, cuverta, pendenza ed aura.
 `.trim().split('\n').map(line=>line.split('|')));
+window.SHROOMS_MESSAGES.push(...String.raw`
+Winter chanterelle|Trompetenpfifferling|Chanterelle en tube|Finferla|Craterellus tubaeformis
+Slippery jack|Butterpilz|Bolet jaune|Pinarello|Suillus luteus
+Spruce milkcap|Fichtenreizker|Lactaire des épicéas|Lattario dell’abete rosso|Lactarius deterrimus
+Charcoal burner|Frauentäubling|Russule charbonnière|Colombina maggiore|Russula cyanoxantha
+Late-season conifer woodland. Moss and acidic soil are not mapped; the canopy preference is provisional.|Nadelwald im Spätherbst. Moos und saure Böden sind nicht kartiert; die Kronendeckungspräferenz ist vorläufig.|Forêts de résineux en fin de saison. Mousses et sols acides ne sont pas cartographiés ; la préférence de couvert est provisoire.|Boschi di conifere a fine stagione. Muschio e suoli acidi non sono cartografati; la preferenza di copertura è provvisoria.|Guaud da coniferas a la fin da la stagiun. Mistgel e terrens acids n’èn betg cartografads; la preferenza da cuverta è provisoria.
+Pine-associated woodland. Uses mapped pine share where available; soil chemistry and tree age are not mapped.|Wald mit Kiefern. Nutzt den kartierten Kiefernanteil, sofern vorhanden; Bodenchemie und Baumalter sind nicht kartiert.|Boisements associés aux pins. Utilise leur part cartographiée si disponible ; chimie du sol et âge des arbres non cartographiés.|Boschi associati ai pini. Usa la quota cartografata se disponibile; chimica del suolo ed età degli alberi non sono cartografate.|Guaud cun tieus. Dovra la part cartografada da tieus, sche disponibla; chemia dal terren e vegliadetgna da las plantas n’èn betg cartografadas.
+Spruce partner: uses mapped spruce share, not general conifer cover. Soil chemistry is not mapped.|Fichte als Partner: nutzt den kartierten Fichtenanteil, nicht den gesamten Nadelholzanteil. Bodenchemie ist nicht kartiert.|Partenaire de l’épicéa : utilise sa part cartographiée, pas celle de tous les résineux. La chimie du sol n’est pas cartographiée.|Partner dell’abete rosso: usa la sua quota cartografata, non tutte le conifere. La chimica del suolo non è cartografata.|Partenari dal pign: dovra la part cartografada da pigns, betg tut las coniferas. La chemia dal terren n’è betg cartografada.
+Broadleaf woodland, particularly beech and oak. Soil chemistry and leaf litter are not mapped.|Laubwald, besonders Buche und Eiche. Bodenchemie und Laubstreu sind nicht kartiert.|Forêts de feuillus, surtout hêtres et chênes. Chimie du sol et litière non cartographiées.|Boschi di latifoglie, soprattutto faggi e querce. Chimica del suolo e lettiera non sono cartografate.|Guaud da feglia, surtut faus e ruvers. Chemia dal terren e feglia per terra n’èn betg cartografadas.
+Ecology & limits|Ökologie und Grenzen|Écologie et limites|Ecologia e limiti|Ecologia e cunfins
+Ecological sources support habitat descriptions. Numerical settings remain provisional.|Ökologische Quellen stützen die Habitatbeschreibungen. Die Zahlenwerte bleiben vorläufig.|Les sources écologiques étayent les descriptions d’habitat. Les paramètres numériques restent provisoires.|Le fonti ecologiche sostengono le descrizioni degli habitat. I parametri numerici restano provvisori.|Las funtaunas ecologicas sustegnan las descripziuns dals habitats. Las valurs numericas restan provisorias.
+Not modeled|Nicht modelliert|Non modélisé|Non modellato|Betg modelà
+Soil chemistry|Bodenchemie|Chimie du sol|Chimica del suolo|Chemia dal terren
+Soil acidity|Bodensäure|Acidité du sol|Acidità del suolo|Aciditad dal terren
+Moss cover|Moosbedeckung|Couverture de mousses|Copertura di muschio|Cuverta da mistgel
+Leaf litter|Laubstreu|Litière de feuilles|Lettiera di foglie|Feglia per terra
+Tree age|Baumalter|Âge des arbres|Età degli alberi|Vegliadetgna da las plantas
+Open grassland|Offenes Grünland|Prairies ouvertes|Prati aperti|Prads averts
+{value}% spruce|{value}% Fichte|{value}% d’épicéas|{value}% di abete rosso|{value}% pign
+{value}% beech|{value}% Buche|{value}% de hêtres|{value}% di faggio|{value}% fau
+{value}% oak|{value}% Eiche|{value}% de chênes|{value}% di quercia|{value}% ruver
+{value}% fir|{value}% Tanne|{value}% de sapins|{value}% di abete bianco|{value}% aviez
+`.trim().split('\n').map(line=>line.split('|')));

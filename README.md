@@ -16,7 +16,7 @@
 - **Five languages:** Deutsch, Français, Italiano, Rumantsch Grischun and English, including map explanations, warnings and accounts.
 - **All 26 cantons:** a lightweight Swiss overview and regional data loaded on demand.
 - **Finer habitat detail:** 50 m cells in Zürich, 100 m elsewhere, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
-- **Seven mushrooms:** porcini, chanterelle, horn of plenty, parasol, bay bolete, wood hedgehog, and saffron milkcap.
+- **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
 - **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
 - **Private accounts and saved spots:** names, notes, species, export, recovery codes and account deletion. Locations are never shared publicly.
 - **Shared weather:** the backend refreshes a cached snapshot every six hours, instead of making every visitor contact the provider.
@@ -78,6 +78,12 @@ npm test
 ```
 
 CI checks the model, all regional data, authentication, privacy, persistence, weather caching and frontend assets. A separate job builds the deployment container, checks its health, restarts it, and verifies a SQLite backup. Tests use fixed dates and committed datasets.
+
+## Add mushrooms through GitHub
+
+No coding required: [suggest a species](https://github.com/andrinr/shrooms/issues/new?template=species.yml) or [propose a habitat indicator](https://github.com/andrinr/shrooms/issues/new?template=indicator.yml). Include the scientific name, ecological evidence and data gaps.
+
+For a pull request, most species need only a profile and translations. The map, API and notebook discover them automatically. **[Contribution guide with a copyable example, indicator reference and checks](CONTRIBUTING.md)**.
 
 ## License
 

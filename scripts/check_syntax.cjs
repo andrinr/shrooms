@@ -9,3 +9,4 @@ function check(directory){
 }
 for(const directory of ['server','src','scripts','tests','data','vendor'])check(directory);
 console.log(`Syntax valid: ${count} JavaScript files`);
+console.log(`Species profiles valid: ${require('./check_species.cjs').checkProfiles()}`);

@@ -68,7 +68,7 @@ Colors adapt to the selected species’ scores across the selected region: the 1
 
 ## More species, sunshine, and drying
 
-Seven species are available, including bay bolete (Maronenröhrling), wood hedgehog (Semmelstoppelpilz), and saffron milkcap (Echter Reizker). Saffron milkcap uses mapped pine percentage; an unknown pine value is omitted, while a measured zero is a weak host signal. Profiles, month ranges, temperature bands, and response coefficients remain provisional assumptions, not fitted Zürich observations.
+Eleven species are available, including bay bolete (Maronenröhrling), wood hedgehog (Semmelstoppelpilz), and saffron milkcap (Echter Reizker). Saffron milkcap uses mapped pine percentage; an unknown pine value is omitted, while a measured zero is a weak host signal. Profiles, month ranges, temperature bands, and response coefficients remain provisional assumptions, not fitted Zürich observations.
 
 The weather snapshot and live refresh now include seven-day sunshine hours and fourteen-day reference evapotranspiration (ET₀). Sunshine is displayed as regional context, not as measured light below the canopy. The rainfall component uses `max(0, rain14 − 0.5 × ET₀14)` before its existing response curve. The 0.5 coefficient is a deliberately modest, unvalidated drying assumption. ET₀ describes a reference grass surface, not actual forest evaporation. No extra independent sun weight is added; canopy and aspect already represent shelter. Missing ET₀ preserves the previous rain-only calculation. All new aggregates require complete past days and exclude today and future forecasts.
 
@@ -85,3 +85,11 @@ The map explicitly marks GIS-ZH forest reserves with brown boundaries and diagon
 ## Adaptive map display
 
 At zoom levels 6–10, the map shows 1 km groups; at 11, 500 m groups; from 12 onwards, regional forest polygons: 50 m in Zürich, 100 m in other cantons, or 500 m in the national overview. Overview squares use forest-area-weighted means of the current species scores, not the highest score in a group. Their centers are forest-area-weighted locations and their screen size keeps them visible; squares are generalized summaries, not habitat boundaries. Overview squares are rendered with crisp edges, without a blur filter. Smooth regional variation comes from the interpolated weather inputs and continuous color scale. This changes presentation only, not cell scores. Forest shapes and reserve boundaries stay sharp. Clicking a summary zooms in. Species, weather and forest-type changes update the overview, while the canton-wide color scale stays consistent across zoom levels. Reserve boundaries remain overlaid at all scales.
+
+## Extensible species profiles
+
+The catalog in `src/data.js` is shared by the frontend and API. Every profile lists ecological source links and missing indicators, shown under “Ecology & limits”. Winter chanterelle adds a late-season conifer profile; slippery jack uses measured pine shares; spruce milkcap uses measured spruce shares; charcoal burner emphasizes broadleaf hosts. The general moisture and terrain functions remain shared. Where individual hosts are unavailable, those factors are omitted rather than replaced with general conifer coverage.
+
+New profiles use European habitat references, including [winter chanterelle](https://www.first-nature.com/fungi/cantharellus-tubaeformis.php), [slippery jack](https://www.first-nature.com/fungi/suillus-luteus.php), [NDFF spruce milkcap ecology](https://www.verspreidingsatlas.nl/0069170) and [NDFF charcoal burner host observations](https://www.verspreidingsatlas.nl/biodiversiteit/habitat-distribution.aspx?soortnummer=10126300). Source seasons from other countries are context, not validated Swiss phenology. Temperature bands, host coefficients and canopy choices are provisional hypotheses. No empirical calibration is implied by these links.
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) to propose a species or implement a new data-backed indicator. CI rejects unsupported fields, invalid ranges, missing sources and incomplete translations.

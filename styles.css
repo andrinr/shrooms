@@ -72,3 +72,5 @@ footer{background:radial-gradient(ellipse at 60% 140%,#65416e,transparent 70%),#
 
 .language-picker{font:inherit;font-size:12px;color:var(--ink);background:#f1e7fb;border:1px solid #bfa8cd;border-radius:18px;padding:8px 9px;max-width:120px;flex-shrink:0}.topbar{gap:12px}.topnav{gap:20px}.topbar-tag{display:none}
 @media(max-width:760px){.topbar{padding:0 12px;gap:7px}.brand{font-size:25px;gap:5px}.brand img{width:28px;height:28px}.brand-spark{display:none}.language-picker{font-size:11px;max-width:99px;padding:7px 4px}.account-trigger{font-size:10px;padding:7px 8px}.hero h1{font-size:clamp(42px,12vw,74px);overflow-wrap:anywhere}}
+
+.species-evidence{font-size:11px;line-height:1.6;margin:-12px 0 22px;color:var(--muted)}.species-evidence summary{cursor:pointer;font-weight:700}.species-evidence ul{padding-left:18px}.species-evidence a{overflow-wrap:anywhere}.species-evidence p{margin:9px 0}

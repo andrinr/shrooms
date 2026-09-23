@@ -25,7 +25,7 @@ test('accounts, private spots, CSRF, recovery, persistence and public API work e
   const a={cookie:alice.cookie,csrf:alice.value.csrf},b={cookie:bob.cookie,csrf:bob.value.csrf};
   assert.equal((await call('/api/auth/me',a)).value.user.username,'alice');
   assert.equal((await call('/api/spots',{method:'POST',cookie:alice.cookie,body:{}})).status,403);
-  const spot={name:'Quiet forest',lat:47.3,lon:8.55,species:'porcini',notes:'Private note',cellId:'zh:10-10'};
+  const spot={name:'Quiet forest',lat:47.3,lon:8.55,species:'spruce_milkcap',notes:'Private note',cellId:'zh:10-10'};
   const saved=await call('/api/spots',{...a,method:'POST',body:spot});assert.equal(saved.status,201);const id=saved.value.spot.id;
   assert.equal((await call('/api/spots',b)).value.spots.length,0);
   assert.equal((await call(`/api/spots/${id}`,{...b,method:'PUT',body:spot})).status,404);
