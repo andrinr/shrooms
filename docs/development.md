@@ -100,3 +100,11 @@ The downloader pins official source URLs and checksums. Rebuilding Zürich with 
 `npm run build` packages the frontend and `npm start` runs the Node backend on port 3000. Rebuild after frontend changes. `npm run dev` restarts the backend on changes; it does not automatically rebuild assets. `npm test` builds before running the test suite. Integration tests start ephemeral local HTTP listeners and disposable SQLite databases.
 
 `server/` contains data serving, weather caching, authentication and private spots. `src/service.js` discovers backend availability; `src/account.js` implements the notebook UI. See [architecture](architecture.md), [API](api.md) and [deployment](deployment.md).
+
+## Languages
+
+The frontend supports `de`, `fr`, `it`, `rm` and `en`. The header selector remembers the choice locally and adds `?lang=fr` (for example) to shareable links. Priority: valid URL language, saved preference, supported browser language, then English. Region navigation preserves the language. Changing language reloads the page; finish editing a note first.
+
+`src/locales.js` is the bundled translation catalog: English source text followed by Swiss Standard German, French, Italian and Rumantsch Grischun. Named placeholders must match across all five columns. `src/i18n.js` translates UI text and accessible labels, including subsequently rendered map/account panels. It never changes form values. Scientific names, mapped place names and private notebook content remain unchanged; Romansh mushroom labels use scientific names rather than uncertain regional names. No translation service or network request is used.
+
+Add entries whenever introducing interface text, including server messages shown to users. Tests check catalog completeness, placeholder parity, preference fallback and dynamic translations. Language tests are structural, not linguistic certification; native-language review is welcome, especially for Romansh and collection-rule wording. The linked official rules remain authoritative. Repository developer documentation remains in English.

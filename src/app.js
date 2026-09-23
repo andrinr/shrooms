@@ -1,5 +1,6 @@
 (async function () {
   const $=id=>document.getElementById(id);
+  const locale=window.SHROOMS_I18N?.locale||'en-GB';
   const catalog=await window.SHROOMS_LOAD('regions');
   const requested=new URLSearchParams(location.search).get('region')||'ch';
   const region=catalog.regions.find(r=>r.id===requested)||catalog.regions[0];
@@ -24,17 +25,17 @@
   const todayKey=`${parts.year}-${parts.month}-${parts.day}`;
   const known=v=>typeof v==='number'&&Number.isFinite(v);
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const number=(v,suffix='',digits=0)=>known(v)?`${v.toFixed(digits)}${suffix}`:'Not available';
+  const number=(v,suffix='',digits=0)=>known(v)?`${new Intl.NumberFormat(locale,{minimumFractionDigits:digits,maximumFractionDigits:digits}).format(v)}${suffix}`:'Not available';
   const treeName=c=>c.treeKnown<.5?'Tree mix unavailable':c.conifer>=75?'Conifer forest':c.broadleaf>=75?'Broadleaf forest':'Mixed forest';
   const treeColor=c=>c.treeKnown<.5?'#a79baa':c.conifer>=75?'#8064c0':c.broadleaf>=75?'#63bc9b':'#d3d781';
   const scored=c=>state.scores.get(c.id);
   const label=v=>v>=70?'Stronger habitat signal':v>=45?'Moderate habitat signal':'Lower habitat signal';
-  $('date-pill').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',day:'numeric',month:'short',year:'numeric'}).format(today).toUpperCase();
+  $('date-pill').textContent=window.SHROOMS_I18N.date(today,{timeZone:'Europe/Zurich',day:'numeric',month:'short',year:'numeric'}).toUpperCase();
   if(region.id==='zh'){
   $('collecting-title').textContent=Number(parts.day)<=10?'Closed season today':'Collect with care today';
   $('collecting-copy').textContent=Number(parts.day)<=10?'No mushroom collecting from the 1st through the 10th of each month in Zürich canton. You can still explore and observe.':'Maximum 1 kg per person per day. Collecting is prohibited in nature reserves; always check the rules at your location.';
   }else{$('collecting-title').textContent='Check local collecting rules';$('collecting-copy').textContent='Rules differ across Switzerland. Check cantonal, municipal and protected-area restrictions. This habitat score does not establish collection permission.';}
-  $('dataset-count').textContent=cells.length.toLocaleString('en');
+  $('dataset-count').textContent=cells.length.toLocaleString(locale);
 
   let interpolatedSource;
   const cellWeather=new Map();
@@ -81,7 +82,7 @@
       if(picks.every(p=>Math.hypot(p.x-cell.x,p.y-cell.y)>=1600))picks.push(cell);
       if(picks.length===12)break;
     }
-    $('result-count').textContent=`${visible.length.toLocaleString('en')} CELLS`;
+    $('result-count').textContent=`${visible.length.toLocaleString(locale)} CELLS`;
     $('site-list').innerHTML=picks.length?picks.map(c=>`<button class="site-row ${c.id===state.selected?'active':''}" data-cell="${c.id}" type="button"><span class="site-icon">✳</span><span class="site-name"><strong>${escape(c.name)}</strong><small>${treeName(c)} · ${number(c.slope,'° slope')}</small></span><span class="site-score" style="--score-color:${scoreColor(scored(c).value)}">${scored(c).value}</span></button>`).join(''):'<p class="empty-list">No mapped forest cells here. Pan the map, clear the search, or choose “Whole canton”.</p>';
     $('site-list').querySelectorAll('[data-cell]').forEach(btn=>btn.addEventListener('click',()=>select(btn.dataset.cell)));
   }
@@ -94,7 +95,7 @@
     const aspect=known(c.aspect)?['N','NE','E','SE','S','SW','W','NW'][Math.round(c.aspect/45)%8]:'unknown';
     const sunCopy=w?`${number(w.sunHours7,' h sunshine / 7 days',1)} · ${number(w.et014,' mm reference evaporation / 14 days',1)}`:'Sunshine and drying data unavailable';
     const weatherCopy=w?`${number(w.rain14,' mm',1)} / 14 days · ${number(w.humidity,'% RH')} · ${number(w.soil,' m³/m³',2)} soil water`:'Weather unavailable; this factor is omitted.';
-    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${c.area} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div>${c.reservePercent==null?`<div class="detail-note"><span>CHECK LOCAL PROTECTION RULES</span><p>Protection coverage is incomplete. Collecting may be forbidden in mapped areas and elsewhere. Check local rules before collecting.</p></div>`:c.reservePercent>0?`<div class="detail-note"><span>COLLECTING MAY BE FORBIDDEN</span><p>This cell overlaps a mapped forest reserve. Check the official rules before collecting; the score describes habitat suitability only.</p></div>`:""}<div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% pine')} · mapped host tree`:s.host?`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`:`${c.forest}% forest coverage in this ${gridSize} m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of ${gridSize} m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>new Intl.DateTimeFormat('en',{month:'short'}).format(new Date(2024,m-1))).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Weather inputs blend regional anchors; they are not local forest measurements. Sunshine is not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div><div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest source ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · terrain ${data.metadata.terrainResolutionMeters} m. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>${gridSize} m score · ${data.metadata.maskResolutionMeters} m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
+    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${number(c.area,'',c.area%1?2:0)} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div>${c.reservePercent==null?`<div class="detail-note"><span>CHECK LOCAL PROTECTION RULES</span><p>Protection coverage is incomplete. Collecting may be forbidden in mapped areas and elsewhere. Check local rules before collecting.</p></div>`:c.reservePercent>0?`<div class="detail-note"><span>COLLECTING MAY BE FORBIDDEN</span><p>This cell overlaps a mapped forest reserve. Check the official rules before collecting; the score describes habitat suitability only.</p></div>`:""}<div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% pine')} · mapped host tree`:s.host?`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`:`${c.forest}% forest coverage in this ${gridSize} m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of ${gridSize} m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>window.SHROOMS_I18N.date(new Date(2024,m-1),{month:'short'})).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Weather inputs blend regional anchors; they are not local forest measurements. Sunshine is not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div><div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest source ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · terrain ${data.metadata.terrainResolutionMeters} m. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>${gridSize} m score · ${data.metadata.maskResolutionMeters} m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
   }
   function render() {
     $('species-latin').textContent=`${species[state.species].latin} · ${species[state.species].note}`;
@@ -279,7 +280,7 @@
     if(state.status==='live')try{localStorage.setItem(cacheKey,JSON.stringify({day:todayKey,grid:gridKey,at:Date.now(),entries:[...state.weather]}));}catch{}
     recompute();
   }
-  $('species').innerHTML=Object.entries(species).map(([id,s])=>`<option value="${id}">${escape(s.name)} · ${escape(s.local)}</option>`).join('');
+  $('species').innerHTML=Object.entries(species).map(([id,s])=>`<option value="${id}">${escape(window.SHROOMS_I18N.t(s.name))}${window.SHROOMS_I18N.t(s.name)===s.latin?'':` · ${escape(s.latin)}`}</option>`).join('');
   $('species').addEventListener('change',event=>{state.species=event.target.value;recompute();});
   $('place-search').addEventListener('input',event=>{state.search=event.target.value.trim();renderList();});
   $('heatmap-mode').addEventListener('click',()=>mapMode('heat'));

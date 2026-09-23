@@ -13,6 +13,7 @@
 
 *Zürich map walkthrough recorded September 2026, before the nationwide expansion. Scores illustrate the interface, not current conditions. Basemap: GIS-ZH and © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).*
 
+- **Five languages:** Deutsch, Français, Italiano, Rumantsch Grischun and English, including map explanations, warnings and accounts.
 - **All 26 cantons:** a lightweight Swiss overview and regional data loaded on demand.
 - **Finer habitat detail:** 50 m cells in Zürich, 100 m elsewhere, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
 - **Seven mushrooms:** porcini, chanterelle, horn of plenty, parasol, bay bolete, wood hedgehog, and saffron milkcap.

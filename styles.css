@@ -70,3 +70,6 @@ footer{background:radial-gradient(ellipse at 60% 140%,#65416e,transparent 70%),#
 .topnav{align-items:center}.map-wrap{flex:none;height:680px;min-height:0}.map-column{align-self:start}@media(max-width:760px){.topbar-tag{display:none}.account-trigger{font-size:11px;padding:8px 12px}.map-wrap{height:480px}}
 
 @media(max-width:760px){.map-column{width:100%;align-self:stretch}}
+
+.language-picker{font:inherit;font-size:12px;color:var(--ink);background:#f1e7fb;border:1px solid #bfa8cd;border-radius:18px;padding:8px 9px;max-width:120px;flex-shrink:0}.topbar{gap:12px}.topnav{gap:20px}.topbar-tag{display:none}
+@media(max-width:760px){.topbar{padding:0 12px;gap:7px}.brand{font-size:25px;gap:5px}.brand img{width:28px;height:28px}.brand-spark{display:none}.language-picker{font-size:11px;max-width:99px;padding:7px 4px}.account-trigger{font-size:10px;padding:7px 8px}.hero h1{font-size:clamp(42px,12vw,74px);overflow-wrap:anywhere}}
