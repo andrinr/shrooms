@@ -26,10 +26,12 @@ function createData(root){
  for(const file of ['data.js','weather.js','scoring.js'])vm.runInContext(fs.readFileSync(path.join(root,'src',file),'utf8'),context,{filename:file});
  const model=context.window;
  const tileKeys=new Set(index.tiles.map(t=>t.key));
+ const soilIndex=unpack(root,'soil/index');
+ const soilKeys=new Set(['soil/index',...soilIndex.tiles]);
  const cells=new Map(index.cells.map(c=>[c.id,c]));
  const cache=new Map();let cacheBytes=0;
  function get(key){
-  if(!['index','protected','national-protected','regions','switzerland-map'].includes(key)&&!tileKeys.has(key)){
+  if(!['index','protected','national-protected','regions','switzerland-map'].includes(key)&&!tileKeys.has(key)&&!soilKeys.has(key)){
    const match=key.match(/^regions\/([a-z]{2})\/(index|tiles\/\d+-\d+)$/);
    if(!match)return null;const regional=region(match[1]);if(!regional||(match[2]!=='index'&&!regional.tiles.some(t=>t.key===key)))return null;
   }

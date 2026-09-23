@@ -19,6 +19,7 @@
 - **All 26 cantons:** a lightweight Swiss overview and regional data loaded on demand.
 - **Finer habitat detail:** 50 m cells in Zürich, 100 m elsewhere, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
 - **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
+- **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. Shown as context, not yet used in mushroom scores. [Data, resolution and modeling limits](docs/SOIL.md).
 - **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
 - **Private accounts and saved spots:** names, notes, species, export, recovery codes and account deletion. Locations are never shared publicly.
 - **Shared weather:** the backend refreshes a cached snapshot every six hours, instead of making every visitor contact the provider.

@@ -47,3 +47,19 @@ Exact national downloads and checksums are listed in [data/national-sources.json
 The optional online map loads `ch.swisstopo.pixelkarte-grau` tiles directly from swisstopo's [XYZ service](https://docs.geo.admin.ch/visualize-data/xyz.html). © swisstopo. The layer selects cartographic scales appropriate to zoom throughout Switzerland. A second, browser-cached copy is blended above the heatmap to keep roads, names and contours visible; this is a display treatment, not a separate roads dataset.
 
 Use is subject to [FSDI terms and fair use](https://www.geo.admin.ch/en/general-terms-of-use-fsdi) and swisstopo's applicable data terms. The app requests visible tiles on demand, with a small pan buffer, and does not bulk-download or proxy them. The bundled map remains available without this service. Tile requests disclose the viewed map area and normal request metadata to the provider; switching to the bundled map stops new online map requests.
+
+## WSL soil predictions
+
+`data/soil/` contains a derivative of **Soil property maps for the Swiss forest**:
+Baltensweiler, A., Walthert, L., Hanewinkel, M., Zimmermann, S., Nussbaum, M. (2024),
+EnviDat, [DOI 10.16904/envidat.484](https://doi.org/10.16904/envidat.484).
+These data and our transformed soil bundles are licensed **[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)**, separately from the application code.
+
+We retain the native 25 m EPSG:2056 grid, select the 0–5 cm soil depth, round pH in
+CaCl₂ suspension and the lower/upper 90% prediction interval to one decimal place,
+and encode them in compressed 256 × 256 tiles. Missing pixels remain missing.
+No gap filling or interpolation is applied. These are model predictions, not
+measurements at each pixel; their presence does not establish mushroom abundance,
+edibility, or soil contamination safety. WSL does not endorse shrooms or its scores.
+Source download URLs and SHA-256 checksums are in the packed `data/soil/index.js`
+manifest. The reproducible transformation is `scripts/build_soil.py`.

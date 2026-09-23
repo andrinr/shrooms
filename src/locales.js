@@ -1,6 +1,12 @@
 /* Columns: English, Swiss Standard German, French, Italian, Rumantsch Grischun.
    Place names, scientific names and private notebook content retain their original form. */
 window.SHROOMS_MESSAGES=String.raw`
+SOIL ACIDITY|BODENSÄURE|ACIDITÉ DU SOL|ACIDITÀ DEL SUOLO|ACIDITAD DAL TERRÈN
+Loading soil prediction…|Bodenmodell wird geladen…|Chargement du modèle de sol…|Caricamento del modello del suolo…|Chargiar il model dal terrèn…
+Soil data could not load. Select the cell to retry.|Bodendaten konnten nicht geladen werden. Wähle die Fläche erneut.|Les données du sol n’ont pas pu être chargées. Sélectionnez à nouveau la cellule.|Impossibile caricare i dati del suolo. Seleziona nuovamente la cella.|Las datas dal terrèn n’han betg pudì vegnir chargiadas. Tscherna danovamain la cella.
+No soil prediction at this cell centre.|Keine Bodenprognose am Mittelpunkt dieser Fläche.|Aucune prédiction du sol au centre de cette cellule.|Nessuna previsione del suolo al centro di questa cella.|Nagina previsiun dal terrèn al center da questa cella.
+90% prediction interval|90-%-Vorhersageintervall|Intervalle de prédiction à 90 %|Intervallo di previsione al 90%|Interval da previsiun da 90 %
+Predicted topsoil pH (0–5 cm), sampled at the cell centre from a 25 m grid. Not a local measurement or an input to the habitat score.|Modellierter pH-Wert im Oberboden (0–5 cm), am Flächenmittelpunkt aus einem 25-m-Raster abgelesen. Keine Messung vor Ort; fliesst nicht in die Standorteignung ein.|pH prédit de la couche supérieure du sol (0–5 cm), extrait au centre de la cellule d’une grille de 25 m. Ce n’est pas une mesure locale ; il n’entre pas dans le score d’habitat.|pH previsto dello strato superficiale del suolo (0–5 cm), estratto al centro della cella da una griglia di 25 m. Non è una misura locale e non influisce sul punteggio di idoneità.|Valur pH modellada dal terrèn superiur (0–5 cm), legida al center da la cella or d’ina griglia da 25 m. Nagina mesiraziun al lieu; na vegn betg resguardada en la valur d’adattaziun dal habitat.
 Use my location|Meinen Standort verwenden|Utiliser ma position|Usa la mia posizione|Dovra mia posiziun
 Hide location|Standort ausblenden|Masquer ma position|Nascondi posizione|Zuppenta la posiziun
 Your position stays in this tab.|Dein Standort bleibt in diesem Tab.|Votre position reste dans cet onglet.|La tua posizione resta in questa scheda.|Tia posiziun resta en quest tab.

@@ -17,7 +17,9 @@
   const national=region.id!=='zh';
   const basemap=national?await window.SHROOMS_LOAD('switzerland-map'):window.SHROOMS_BASEMAP;
   const byId=new Map(cells.map(c=>[c.id,{type:"Feature",properties:c}]));
-  const loadedTiles=new Set();
+  let detailTiles;
+  const soilLookup=window.SHROOMS_SOIL.create(window.SHROOMS_LOAD);
+  let soilCell=null,soilResult={status:"loading"};
   const overviewGroups=new Map([500,1000].map(size=>[size,window.SHROOMS_ADAPTIVE.group(cells,size)]));
   const state={species:'porcini',selected:null,map:null,layer:null,selection:null,mode:'heat',weather:new Map(),scores:new Map(),status:'loading',search:'',updated:null};
   let rankedCells=[];
@@ -67,6 +69,8 @@
   async function select(id,fly=true) {
     state.selected=id;
     const feature=byId.get(id), c=feature.properties;
+    soilCell=id;soilResult={status:'loading'};
+    soilLookup(c.x,c.y).then(result=>{if(soilCell===id){soilResult=result;renderDetail();}});
     renderDetail();renderList();
     window.dispatchEvent(new CustomEvent('shrooms:selection',{detail:{...c,species:state.species,region:region.id}}));
     if(fly&&state.map)state.map.flyTo([c.lat,c.lon],13,{duration:.6});
@@ -97,12 +101,19 @@
     const value=factor.value;
     return `<div class="factor"><div class="factor-label"><span>${title}<small>${detail}</small></span><strong>${known(value)?Math.round(value*100)+'/100':'—'}</strong></div><div class="factor-track"><i style="width:${known(value)?value*100:0}%"></i></div></div>`;
   }
+  function soilDetail(){
+    const t=window.SHROOMS_I18N.t;
+    const result=soilResult;
+    let text=t(result.status==='loading'?'Loading soil prediction…':result.status==='error'?'Soil data could not load. Select the cell to retry.':'No soil prediction at this cell centre.');
+    if(result.status==='ready')text=`pH (CaCl₂): ${number(result.ph,'',1)}<br>${escape(t('90% prediction interval'))}: ${number(result.lower,'',1)}–${number(result.upper,'',1)}`;
+    return `<div class="detail-note"><span>${escape(t('SOIL ACIDITY'))}</span><p>${text}</p><small>${escape(t('Predicted topsoil pH (0–5 cm), sampled at the cell centre from a 25 m grid. Not a local measurement or an input to the habitat score.'))}</small><p><a href="https://doi.org/10.16904/envidat.484" target="_blank" rel="noopener noreferrer">WSL / EnviDat (2024)</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a></p></div>`;
+  }
   function renderDetail() {
     const c=byId.get(state.selected).properties, result=scored(c), w=cellWeather.get(c.id), s=species[state.species];
     const aspect=known(c.aspect)?['N','NE','E','SE','S','SW','W','NW'][Math.round(c.aspect/45)%8]:'unknown';
     const sunCopy=w?`${number(w.sunHours7,' h sunshine / 7 days',1)} · ${number(w.et014,' mm reference evaporation / 14 days',1)}`:'Sunshine and drying data unavailable';
     const weatherCopy=w?`${number(w.rain14,' mm',1)} / 14 days · ${number(w.humidity,'% RH')} · ${number(w.soil,' m³/m³',2)} soil water`:'Weather unavailable; this factor is omitted.';
-    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${number(c.area,'',c.area%1?2:0)} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div>${c.reservePercent==null?`<div class="detail-note"><span>CHECK LOCAL PROTECTION RULES</span><p>Protection coverage is incomplete. Collecting may be forbidden in mapped areas and elsewhere. Check local rules before collecting.</p></div>`:c.reservePercent>0?`<div class="detail-note"><span>COLLECTING MAY BE FORBIDDEN</span><p>This cell overlaps a mapped forest reserve. Check the official rules before collecting; the score describes habitat suitability only.</p></div>`:""}<div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% '+s.requiredTree)} · mapped host tree`:s.host?(c.treeKnown<.5?'Tree mix unavailable':`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`):`${c.forest}% forest coverage in this ${gridSize} m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of ${gridSize} m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>window.SHROOMS_I18N.date(new Date(2024,m-1),{month:'short'})).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Weather inputs blend regional anchors; they are not local forest measurements. Sunshine is not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div><div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest source ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · terrain ${data.metadata.terrainResolutionMeters} m. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>${gridSize} m score · ${data.metadata.maskResolutionMeters} m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
+    $('detail').innerHTML=`<div class="detail-kicker">FOREST CELL <span>${c.id}</span></div><div class="detail-title"><h3>${escape(c.name)}</h3><p>${escape(c.district)} · ${number(c.elevation,' m')} · ${number(c.area,'',c.area%1?2:0)} ha mapped forest</p></div><div class="score-panel"><div class="score-ring" style="--value:${result.value};--ring-color:${scoreColor(result.value)}"><span>${result.value}<small>/ 100</small></span></div><div><small>MODELED SUITABILITY</small><strong>${label(result.value)}</strong><p>${s.name} · ${result.live?'weather included':'habitat & terrain only'}</p></div></div>${c.reservePercent==null?`<div class="detail-note"><span>CHECK LOCAL PROTECTION RULES</span><p>Protection coverage is incomplete. Collecting may be forbidden in mapped areas and elsewhere. Check local rules before collecting.</p></div>`:c.reservePercent>0?`<div class="detail-note"><span>COLLECTING MAY BE FORBIDDEN</span><p>This cell overlaps a mapped forest reserve. Check the official rules before collecting; the score describes habitat suitability only.</p></div>`:""}<div class="factor-heading">WHAT DRIVES IT? <span>${Object.values(result.factors).filter(f=>known(f.value)).length} / 6 FACTORS</span></div>${factor(s.host?'Tree partners':'Forest edge proxy',s.requiredTree?`${number(c[s.requiredTree],'% '+s.requiredTree)} · mapped host tree`:s.host?(c.treeKnown<.5?'Tree mix unavailable':`${number(c.broadleaf,'% broadleaf')} · ${number(c.conifer,'% conifer')}`):`${c.forest}% forest coverage in this ${gridSize} m cell`,result.factors.tree)}${factor('Canopy & forest coverage',`${number(c.canopy,'% canopy')} · ${c.forest}% of ${gridSize} m cell is forest`,result.factors.canopy)}${factor('Moisture',weatherCopy,result.factors.moisture)}${factor('Temperature',w?number(w.temp7,'°C · past 7 days',1):'Weather unavailable',result.factors.temperature)}${factor('Slope & aspect',`${number(c.slope,'° median slope',1)} · ${aspect} aspect`,result.factors.terrain)}${factor('Season',s.months.map(m=>window.SHROOMS_I18N.date(new Date(2024,m-1),{month:'short'})).join(' · '),result.factors.season)}<div class="detail-note"><span>SUN & DRYING</span><p>${sunCopy}</p><small>Weather inputs blend regional anchors; they are not local forest measurements. Sunshine is not light reaching the forest floor. Reference evaporation modestly reduces the rainfall contribution; canopy and aspect already represent shelter.</small></div>${soilDetail()}<div class="detail-note"><span>TRACEABLE TO THE SOURCE</span><p>Forest source ${c.yearMin===c.yearMax?c.yearMin:`${c.yearMin}–${c.yearMax}`} · terrain ${data.metadata.terrainResolutionMeters} m. Cell ${c.id}, ${c.lat.toFixed(4)}° N, ${c.lon.toFixed(4)}° E.</p><small>${gridSize} m score · ${data.metadata.maskResolutionMeters} m forest mask. This is a habitat estimate, not a sighting or collection permission.</small></div><a class="directions" href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=15/${c.lat}/${c.lon}" target="_blank" rel="noopener noreferrer">Explore this forest <span>↗</span></a>`;
   }
   function render() {
     $('species-evidence').innerHTML=`<summary>Ecology & limits</summary><p>Ecological sources support habitat descriptions. Numerical settings remain provisional.</p><strong>Not modeled</strong><ul>${species[state.species].unmapped.map(item=>`<li>${escape(item)}</li>`).join('')}</ul>${species[state.species].sources.map(source=>`<a href="${escape(source.url)}" target="_blank" rel="noopener noreferrer">${escape(source.title)} ↗</a>`).join('<br>')}`;
@@ -149,10 +160,18 @@
     }
 
     L.control.zoom({position:'bottomright'}).addTo(state.map);
-    state.layer=L.geoJSON([],{style:cellStyle,onEachFeature(feature,layer){
-      layer.on('click',()=>select(feature.properties.id,false));
-      layer.bindTooltip(()=>`${escape(feature.properties.name)} · ${scored(feature.properties).value}/100<br>${treeName(feature.properties)} · click to inspect`,{sticky:true});
-    }}).addTo(state.map);
+    state.layer=L.featureGroup().addTo(state.map);
+    detailTiles=window.SHROOMS_DETAIL_TILES.create({
+      load:loadTile,
+      attach(feature){
+        const layer=L.geoJSON(feature,{style:cellStyle,onEachFeature(f,path){
+          path.on('click',()=>select(f.properties.id,false));
+          path.bindTooltip(()=>`${escape(f.properties.name)} · ${scored(f.properties).value}/100<br>${treeName(f.properties)} · click to inspect`,{sticky:true});
+        }});
+        state.layer.addLayer(layer);return layer;
+      },
+      detach:layer=>state.layer.removeLayer(layer)
+    });
     const bounds=L.latLngBounds(data.tiles.flatMap(t=>t.bounds));
     const all=()=>state.map.fitBounds(bounds,{padding:[20,20]});
     $('reset-view').addEventListener('click',()=>{state.search='';$('place-search').value='';all();});
@@ -195,7 +214,7 @@
     overviewPane.style.pointerEvents='none';
     state.overview=window.SHROOMS_OVERVIEW.create(L,state.map);
     let viewTimer;
-    state.map.on('movestart',()=>clearTimeout(viewTimer));
+    state.map.on('movestart',()=>{clearTimeout(viewTimer);detailTiles.cancel();});
     state.map.on('moveend',()=>{clearTimeout(viewTimer);viewTimer=setTimeout(()=>{updateResolution();renderList();renderDetail();loadVisibleTiles();},100);});all();updateResolution();loadVisibleTiles();select(state.selected,false);
     const tiledMap=window.SHROOMS_BASEMAP_TILES.mount(L,state.map,(online,failed)=>{
       state.onlineMap=online;$('basemap-style').value=online?'online':'offline';
@@ -280,21 +299,20 @@
   }
   async function loadTile(key) {
     const items=await window.SHROOMS_LOAD(key);
-    if(loadedTiles.has(key))return;
-    loadedTiles.add(key);
-    const features=items.map(item=>{const f=byId.get(item.id);f.geometry=item.geometry;return f;});
-    state.layer?.addData(features);
+    return items.map(item=>{const f=byId.get(item.id);f.geometry=item.geometry;return f;});
   }
   async function loadVisibleTiles() {
-    if(window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom())!==100){$('geometry-status').hidden=true;return;}
-    const tiles=data.tiles.filter(t=>state.map.getBounds().intersects(L.latLngBounds(t.bounds))&&!loadedTiles.has(t.key));
-    let failed=false;
-    // Bound simultaneous downloads and decompression work.
-    let next=0;
-    await Promise.all(Array.from({length:4},async()=>{
-      while(next<tiles.length&&window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom())===100){const tile=tiles[next++];try{await loadTile(tile.key);}catch{failed=true;}}
-    }));
-    $('geometry-status').hidden=!failed;
+    if(!detailTiles)return;
+    if(window.SHROOMS_ADAPTIVE.resolution(state.map.getZoom())!==100){
+      await detailTiles.update([],()=>false);$('geometry-status').hidden=true;return;
+    }
+    // A small geographic margin includes cells crossing the viewport boundary.
+    const bounds=state.map.getBounds().pad(.06);
+    const tiles=data.tiles.filter(t=>bounds.intersects(L.latLngBounds(t.bounds))).map(t=>t.key);
+    const margin=gridSize/70000;
+    const south=bounds.getSouth()-margin,north=bounds.getNorth()+margin,west=bounds.getWest()-margin,east=bounds.getEast()+margin;
+    const result=await detailTiles.update(tiles,f=>{const c=f.properties;return c.lat>=south&&c.lat<=north&&c.lon>=west&&c.lon<=east;});
+    if(!result.stale){$('geometry-status').hidden=!result.failed;$('map').dataset.renderedCells=result.count;}
   }
   async function serverWeather(){
     const payload=await window.SHROOMS_SERVICE.request(`weather?region=${region.id}`);

@@ -2,7 +2,7 @@
 window.SHROOMS_PACKED = {};
 window.SHROOMS_LOAD = (() => {
   const pending = new Map();
-  return function load(key) {
+  function load(key) {
     if (pending.has(key)) return pending.get(key);
     const task = (async () => {
       if(window.SHROOMS_SERVICE&&await window.SHROOMS_SERVICE.ready){
@@ -27,5 +27,7 @@ window.SHROOMS_LOAD = (() => {
     pending.set(key,task);
     task.catch(()=>pending.delete(key));
     return task;
-  };
+  }
+  load.release=key=>pending.delete(key);
+  return load;
 })();
