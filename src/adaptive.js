@@ -18,9 +18,9 @@
       treeKnown:mean(c=>c.treeKnown),conifer:mean(c=>c.conifer||0),broadleaf:mean(c=>c.broadleaf||0),count:cells.length};
   }
   function factors(cells,scores){
-    return Object.fromEntries(['tree','canopy','moisture','temperature','terrain','season'].map(key=>{
+    return Object.fromEntries(['tree','canopy','moisture','temperature','terrain','season','soil'].map(key=>{
       let sum=0,area=0;
-      for(const cell of cells){const value=scores.get(cell.id).factors[key].value;if(Number.isFinite(value)){sum+=value*cell.area;area+=cell.area;}}
+      for(const cell of cells){const value=scores.get(cell.id).factors[key]?.value;if(Number.isFinite(value)){sum+=value*cell.area;area+=cell.area;}}
       return [key,area?sum/area:null];
     }));
   }

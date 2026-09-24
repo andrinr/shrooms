@@ -4,6 +4,20 @@
   const known = value => typeof value === 'number' && Number.isFinite(value);
   const monthFormatter=new Intl.DateTimeFormat('en', {timeZone:'Europe/Zurich',month:'numeric'});
   let cachedDate, cachedMonth;
+  function soilFactor(cell, species, baseWeight) {
+    const p=species.soil, v=cell.soilPh;
+    const missing={value:null,weight:0,confidence:0};
+    if(!p||!Array.isArray(v)||v.length!==3||!v.every(known))return missing;
+    const [ph,lower,upper]=v;
+    if(lower<0||upper>14||lower>ph||ph>upper)return missing;
+    // Broad acid preference; numerical curve is provisional on the CaCl2 scale.
+    // Average three support points, without treating the interval as a probability distribution.
+    const suitability=x=>1-.4*clamp((x-p.acidUntil)/(p.fadeUntil-p.acidUntil));
+    const confidence=1/(1+(upper-lower)**2);
+    if(!confidence)return missing;
+    const share=p.maxShare*confidence;
+    return {value:(suitability(lower)+suitability(ph)+suitability(upper))/3,weight:baseWeight*share/(1-share),confidence};
+  }
   function score(cell, species, weather, date = new Date()) {
     const timestamp=date.getTime();
     if(timestamp!==cachedDate){cachedDate=timestamp;cachedMonth=Number(monthFormatter.format(date));}
@@ -43,10 +57,12 @@
       terrain=clamp((1-.55*clamp(cell.slope/45))*shade,.15,1);
     }
     const factors={tree:{value:tree,weight:.2},canopy:{value:canopy,weight:.1},moisture:{value:moisture,weight:.35},temperature:{value:temperature,weight:.15},terrain:{value:terrain,weight:.1},season:{value:season,weight:.1}};
+    const baseWeight=Object.values(factors).filter(f=>known(f.value)).reduce((sum,f)=>sum+f.weight,0);
+    factors.soil=soilFactor(cell,species,baseWeight);
     const available=Object.values(factors).filter(f=>known(f.value));
     const weight=available.reduce((sum,f)=>sum+f.weight,0);
     const value=Math.round(100*Math.exp(available.reduce((sum,f)=>sum+f.weight*Math.log(Math.max(.02,f.value)),0)/weight));
     return {value:clamp(value,0,100),factors,completeness:weight,live:known(moisture)&&known(temperature)};
   }
-  window.SHROOMS_SCORE={score};
+  window.SHROOMS_SCORE={score,soilFactor};
 })();

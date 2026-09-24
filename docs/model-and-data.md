@@ -25,6 +25,10 @@ The **national overview remains 85,969 generalized 500 m groups**, derived from 
 
 `data/switzerland.svg` and `data/switzerland-map.js` provide national roads, boundaries, lakes and settlement labels from swissTLMRegio. The national protection overlay combines 36 Swiss-clipped swissTLMRegio protected-area polygons with Zürich's 594 reserve groups. It is **not a comprehensive national protection inventory**. National cell reserve overlap is unknown (null); warnings and boundaries remain visible. Sources and download checksums are in `data/national-sources.json` and each regional index.
 
+## Experimental soil acidity
+
+Three species now include uncertainty-weighted topsoil acidity with a maximum 3–5% share. See [soil model, evidence and limits](SOIL.md). The six original weights below describe their relative proportions before the small soil share is added.
+
 ## What the number means
 
 The 0–100 **modeled suitability** score is an unvalidated ecological heuristic. It is not a probability of encountering a mushroom, a report of a find, or an identification tool. The weights and response curves are explicit in [`src/scoring.js`](../src/scoring.js):
@@ -42,7 +46,7 @@ The score is a weighted geometric mean. Missing factors are omitted and the rema
 
 Only completed days enter the weather aggregates. Today's and future forecasts are excluded. A full 14-day rainfall history is required for the rainfall term. Soil moisture and humidity use up to 24 hourly samples from the preceding completed day. Hosted mode uses a server snapshot refreshed every six hours. Static mode uses a bundled dated snapshot. Snapshots older than 48 hours are excluded. In hosted mode “Refresh weather” reloads the shared server cache. In static mode it requests the provider and caches successful responses locally for one hour. The app falls back to available habitat and terrain factors when no usable weather is available. The snapshot date marks the aggregation cutoff; only earlier complete days are included.
 
-The source surveys are real; the species response functions and weights are assumptions. Soil acidity, deadwood, fungal presence, recent collection pressure and fine-scale microclimate are not modeled. Open grassland habitat for Parasol is outside this forest map. Habitat scores with different missing inputs should not be treated as equally certain.
+The source surveys are real; the species response functions and weights are assumptions. Other soil chemistry, deadwood, fungal presence, recent collection pressure and fine-scale microclimate are not modeled. Open grassland habitat for Parasol is outside this forest map. Habitat scores with different missing inputs should not be treated as equally certain.
 
 ## Bundled basemap
 
@@ -72,7 +76,7 @@ Eleven species are available, including bay bolete (Maronenröhrling), wood hedg
 
 The weather snapshot and live refresh now include seven-day sunshine hours and fourteen-day reference evapotranspiration (ET₀). Sunshine is displayed as regional context, not as measured light below the canopy. The rainfall component uses `max(0, rain14 − 0.5 × ET₀14)` before its existing response curve. The 0.5 coefficient is a deliberately modest, unvalidated drying assumption. ET₀ describes a reference grass surface, not actual forest evaporation. No extra independent sun weight is added; canopy and aspect already represent shelter. Missing ET₀ preserves the previous rain-only calculation. All new aggregates require complete past days and exclude today and future forecasts.
 
-Other potentially useful inputs—soil pH, substrate/deadwood, frost damage, and fine-scale terrain shading—remain outside the score until suitable data and response functions are available.
+Other potentially useful inputs—other soil chemistry, substrate/deadwood, frost damage, and fine-scale terrain shading—remain outside the score until suitable data and response functions are available.
 
 References: [Open-Meteo variable definitions](https://open-meteo.com/en/docs), [WSL fungal ecology research](https://www.wsl.ch/en/biodiversity/species-diversity/fungi/), [wood hedgehog habitat](https://www.first-nature.com/fungi/hydnum-repandum.php), [saffron milkcap habitat](https://www.first-nature.com/fungi/lactarius-deliciosus.php), and [NDFF bay bolete habitat observations](https://www.verspreidingsatlas.nl/biodiversiteit/habitat-distribution.aspx?soortnummer=10142020).
 

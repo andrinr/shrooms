@@ -27,11 +27,21 @@ window.SHROOMS_SPECIES = {
       {
         "title": "First Nature — Boletus edulis",
         "url": "https://www.first-nature.com/fungi/boletus-edulis.php"
+      },
+      {
+        "title": "Polish forest study — Boletus edulis and Imleria badia",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12348591/"
       }
     ],
     "unmapped": [
-      "Soil chemistry"
-    ]
+      "Other soil chemistry"
+    ],
+    "soil": {
+      "acidUntil": 5,
+      "fadeUntil": 7,
+      "maxShare": 0.03,
+      "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12348591/"
+    }
   },
   "chanterelle": {
     "name": "Chanterelle",
@@ -55,16 +65,26 @@ window.SHROOMS_SPECIES = {
       "other": 0.6
     },
     "canopy": "closed",
-    "note": "Broadleaf or mixed forest. Soil acidity is not yet included.",
+    "note": "Broadleaf or mixed forest. Experimental acidity preference included.",
     "sources": [
       {
         "title": "First Nature — Cantharellus cibarius",
         "url": "https://www.first-nature.com/fungi/cantharellus-cibarius.php"
+      },
+      {
+        "title": "European Cantharellus taxonomy and ecology",
+        "url": "https://doi.org/10.1007/s13225-016-0376-7"
       }
     ],
     "unmapped": [
-      "Soil chemistry"
-    ]
+      "Other soil chemistry"
+    ],
+    "soil": {
+      "acidUntil": 4.5,
+      "fadeUntil": 6.5,
+      "maxShare": 0.05,
+      "source": "https://doi.org/10.1007/s13225-016-0376-7"
+    }
   },
   "horn": {
     "name": "Horn of plenty",
@@ -148,16 +168,26 @@ window.SHROOMS_SPECIES = {
       "other": 0.4
     },
     "canopy": "closed",
-    "note": "Conifer and mixed woodland. Acidic soil preference is not yet mapped.",
+    "note": "Conifer and mixed woodland. Experimental acidity preference included.",
     "sources": [
       {
         "title": "First Nature — Imleria badia",
         "url": "https://www.first-nature.com/fungi/imleria-badia.php"
+      },
+      {
+        "title": "Polish forest study — Boletus edulis and Imleria badia",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12348591/"
       }
     ],
     "unmapped": [
-      "Soil chemistry"
-    ]
+      "Other soil chemistry"
+    ],
+    "soil": {
+      "acidUntil": 4.5,
+      "fadeUntil": 6.5,
+      "maxShare": 0.05,
+      "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12348591/"
+    }
   },
   "hedgehog": {
     "name": "Wood hedgehog",

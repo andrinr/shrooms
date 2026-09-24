@@ -118,3 +118,9 @@ The model has not been validated against Swiss mushroom observations. Species ad
 Write for someone planning a walk, using natural sentences rather than word-for-word English. German uses Swiss Standard German, «du», Swiss spelling and familiar local terms such as «Föhre». French uses «vous»; Italian uses «tu». Keep terminology consistent across buttons, descriptions, legends and warnings. In particular, the heatmap describes habitat suitability, not temperature or a measured probability of finding mushrooms.
 
 Translate complete thoughts wherever possible. Check text split around links in the rendered page so that the sentence is grammatical as a whole. Preserve scientific names, place names, units and placeholder names. Check long labels at narrow widths. Catalog checks verify completeness and placeholders, not linguistic quality; Romansh and unfamiliar regional terminology should be reviewed by fluent speakers before being described as fully reviewed.
+
+### Experimental soil profiles
+
+Optional `soil` fields are `acidUntil`, `fadeUntil` (pH CaCl₂ at 0–5 cm), `maxShare` (greater than 0, at most 0.05), and `source` (must match a cited profile source URL). Omit the field for unsupported species. These broad curves are provisional; do not copy water-pH optima into this scale. See [the soil model](docs/SOIL.md) for uncertainty handling and examples in `src/data.js`.
+
+After regenerating forest or soil data, run `node scripts/join_soil.cjs` to refresh the native samples used by both frontend and API. Derived pH fields remain CC BY-SA 4.0.

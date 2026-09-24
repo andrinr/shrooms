@@ -80,3 +80,5 @@ Shapefile ZIP. `scripts/build_detailed_habitat.py` rasterizes their boundaries a
 values. NFI tree mix is averaged from its 10 m raster. Terrain remains the 200 m
 DHM25/200 source. This derivative is not endorsed by swisstopo. National overview
 and legacy regional API data still use the older swissTLMRegio-derived bundles.
+
+The `soilPh` fields joined into habitat tiles and regional indexes are derived from the same WSL / EnviDat 484 soil rasters and retain their CC BY-SA 4.0 attribution and license. See `docs/SOIL.md`.

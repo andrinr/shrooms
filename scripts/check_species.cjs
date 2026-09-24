@@ -1,6 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 function validateSpecies(species,messages){
- const errors=[],fields=new Set(['name','local','latin','months','temp','host','requiredTree','canopy','note','unmapped','sources']);
+ const errors=[],fields=new Set(['name','local','latin','months','temp','host','requiredTree','canopy','note','unmapped','sources','soil']);
  const translated=new Map(messages.map(row=>[row[0],row]));
  const text=v=>typeof v==='string'&&v.trim().length>0;
  const seen=new Set();
@@ -19,6 +19,7 @@ function validateSpecies(species,messages){
    check(s.host&&Object.values(s.host).every(v=>Number.isFinite(v)&&v>=0&&v<=1)&&Object.values(s.host).some(v=>v>0),'host preferences must be 0–1, with at least one positive');
   }
   if(s.requiredTree!==undefined){check(['pine','spruce','beech','oak','fir'].includes(s.requiredTree),'requiredTree must have a measured dataset field');check(s.host!==null,'requiredTree requires a host profile');}
+  if(s.soil!==undefined){const p=s.soil;check(p&&Object.keys(p).sort().join(',')==='acidUntil,fadeUntil,maxShare,source'&&Number.isFinite(p.acidUntil)&&Number.isFinite(p.fadeUntil)&&p.acidUntil>=0&&p.fadeUntil<=14&&p.fadeUntil>p.acidUntil&&Number.isFinite(p.maxShare)&&p.maxShare>0&&p.maxShare<=.05&&s.sources?.some(v=>v.url===p.source),'soil needs a cited CaCl2 curve and a maximum share of 0–5%');}
   check(Array.isArray(s.unmapped)&&s.unmapped.every(text),'unmapped must list missing indicators as strings');
   check(Array.isArray(s.sources)&&s.sources.length>0,'at least one ecological source is required');
   for(const source of Array.isArray(s.sources)?s.sources:[]){

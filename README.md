@@ -19,7 +19,7 @@
 - **One continuous Swiss map:** local datasets load automatically as you zoom and pan, including across canton boundaries. The canton selector is a shortcut, not a filter. [Sources and detailed forest-map candidates](docs/FOREST_DATA.md).
 - **Finer habitat detail:** 50 m local cells across Switzerland, a 25 m swissTLM3D forest mask outside Zürich, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
 - **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
-- **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. Shown as context, not yet used in mushroom scores. [Data, resolution and modeling limits](docs/SOIL.md).
+- **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. A small experimental score factor for porcini, chanterelle and bay bolete; uncertainty reduces its influence. [Data, resolution and modeling limits](docs/SOIL.md).
 - **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
 - **Browser notebook:** save places, species and notes locally, without an account. Export and import JSON backups to move between devices. Clearing browser data removes local spots.
 - **Shared weather:** the backend refreshes a cached snapshot every six hours, instead of making every visitor contact the provider.

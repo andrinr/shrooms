@@ -12,6 +12,7 @@
     "check": "node scripts/check_syntax.cjs",
     "pretest": "npm run build",
     "test": "node --test tests/*.test.cjs",
+    "data:soil-join": "node scripts/join_soil.cjs",
     "weather:refresh": "node scripts/prefetch_weather.cjs"
   }
 }
