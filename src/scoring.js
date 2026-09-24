@@ -61,6 +61,10 @@
     factors.soil=soilFactor(cell,species,baseWeight);
     const available=Object.values(factors).filter(f=>known(f.value));
     const weight=available.reduce((sum,f)=>sum+f.weight,0);
+    for(const f of Object.values(factors)){
+      f.share=known(f.value)?f.weight/weight:0;
+      f.multiplier=f.share?Math.pow(Math.max(.02,f.value),f.share):1;
+    }
     const value=Math.round(100*Math.exp(available.reduce((sum,f)=>sum+f.weight*Math.log(Math.max(.02,f.value)),0)/weight));
     return {value:clamp(value,0,100),factors,completeness:weight,live:known(moisture)&&known(temperature)};
   }

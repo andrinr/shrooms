@@ -102,3 +102,12 @@ test('regional weather interpolation removes nearest-anchor steps and omits miss
  assert.ok(Math.abs(weather.interpolate({x:0,y:0},points,entries).rain14-10)<.001);
  assert.equal(weather.interpolate({x:0,y:0},points,new Map()),undefined);
 });
+
+test('factor weights and multipliers reconstruct the species score',()=>{
+ for(const profile of Object.values(species))for(const c of [cell,{forest:90}, {...cell,soilPh:[5,4,6]}]){
+  const result=model.score(c,profile,wet,autumn),factors=Object.values(result.factors);
+  assert.ok(Math.abs(factors.reduce((sum,f)=>sum+f.share,0)-1)<1e-10);
+  assert.equal(Math.round(100*factors.reduce((product,f)=>product*f.multiplier,1)),result.value);
+  for(const f of factors)if(f.value===null){assert.equal(f.share,0);assert.equal(f.multiplier,1);}
+ }
+});

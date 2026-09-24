@@ -109,3 +109,9 @@ This removes the Zürich/non-Zürich **cartographic** detail gap while online. I
 ### Overview rendering performance
 
 Overview squares are painted into small canvas map tiles rather than individual Leaflet rectangles. A spatial tile index handles square drawing and click selection, including squares crossing tile seams. Tiles cache projected centers at the active zoom, and panning reuses them when the scale is unchanged. Color changes redraw the small tile set. Viewport statistics and sidebar updates wait for a 100 ms pause in map movement; the existing map remains visible during zoom animations. Detail geometry and numeric scores are unchanged.
+
+## Reading contributions and relative ranks
+
+Each available factor exposes its normalized `share` and `multiplier = max(0.02, suitability) ** share`. The final score is `round(100 × product of multipliers)`; missing factors have zero share and multiplier 1. Displayed weights and multipliers are rounded. Contributions multiply, rather than adding percentage points.
+
+The relative comparison is the proportion of visible forest cells with a strictly lower score for the selected species. Ties are not counted as lower. It is shown only for a selected cell in the current viewport and dataset. It changes with the viewport and does not change the ecological score or imply a probability of finding mushrooms.

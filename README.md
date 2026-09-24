@@ -21,7 +21,7 @@
 - **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
 - **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. A small experimental score factor for porcini, chanterelle and bay bolete; uncertainty reduces its influence. [Data, resolution and modeling limits](docs/SOIL.md).
 - **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
-- **Browser notebook:** save places, species and notes locally, without an account. Export and import JSON backups to move between devices. Clearing browser data removes local spots.
+- **Browser notebook:** save places, species and notes locally, without an account. Saved places appear as clickable stars on the map. Export and import JSON backups to move between devices. Clearing browser data removes local spots.
 - **Shared weather:** the backend refreshes a cached snapshot every six hours, instead of making every visitor contact the provider.
 - **Protected-area overlays:** named boundaries and collection warnings, with partial coverage clearly marked.
 - **Bundled maps:** no dependency on live map tiles; pan, zoom, search municipalities and inspect forest cells.
@@ -95,3 +95,5 @@ Original code, scripts, documentation and artwork are **[MIT licensed](LICENSE)*
 ### Existing account data
 
 The account UI and public account endpoints are retired. Existing server databases are preserved, not deleted or automatically copied into browser storage. Previously exported spot JSON files can be imported into the notebook. Local storage is specific to the browser and site address; it is not encrypted or synchronized.
+
+Scores are species-specific. The details show each factor’s effective weight and multiplier, plus the selected cell’s ranking within the visible forest cells. This relative comparison changes with the viewport; the underlying habitat score does not. Fine 50 m geometry is loaded from zoom level 14; wider views use lightweight summaries.

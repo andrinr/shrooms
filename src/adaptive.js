@@ -1,6 +1,6 @@
 /* Area-weighted display summaries; the underlying regional model is unchanged. */
 (function () {
-  const resolution=zoom=>zoom<=10?1000:zoom<=11?500:100;
+  const resolution=zoom=>zoom<=10?1000:zoom<14?500:100;
   function group(cells,meters){
     const groups=new Map(),step=meters/50;
     for(const cell of cells){
