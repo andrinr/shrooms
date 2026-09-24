@@ -4,7 +4,7 @@
 
 ## Where the map comes from
 
-There are **no handpicked “known spots” or mushroom sighting records** in the current model. The original demonstration anchors have been replaced by **197,669 computed 50 m forest cells in Zürich**, plus 100 m cells in the other cantons and a 500 m Swiss overview:
+There are **no handpicked “known spots” or mushroom sighting records** in the current model. The original demonstration anchors have been replaced by **197,669 computed 50 m forest cells in Zürich**, plus 50 m cells in the other cantons and a 500 m Swiss overview:
 
 - **Forest stands:** GIS-ZH [Luftbild-Bestandeskarte](https://geolion.zh.ch/geodatensatz/347), 95,716 source features, including 92,866 forest stands with `flcodelb=10`. Tree composition, canopy coverage and aerial survey years come from those features. Survey years range from 2000 to 2024, with the dates for each cell shown in the interface.
 - **Forest mask:** stand polygons are simplified by 3 m before rasterization at 50 m. Raster cell centers determine coverage. Each retained 50 m cell represents one forest sample (0.25 ha). This adds local forest and terrain detail, but does not preserve parcel-level boundaries or create finer weather measurements.
@@ -17,11 +17,11 @@ The Zürich habitat dataset is approximately 11.6 MB: a 7.1 MB compressed index 
 
 ## Nationwide coverage
 
-Outside Zürich, forest boundaries come from © swisstopo swissTLMRegio 2026. This is generalized regional mapping (approximately 20–60 m positional accuracy), rasterized by cell centers at 100 m. Tree mix comes from the FOEN / WSL National Forest Inventory 2023 broadleaf percentage raster at 10 m, averaged to 100 m. Tree cover alone is not treated as forest: the swissTLMRegio forest mask controls inclusion. Individual tree-species shares and canopy are unknown and omitted.
+Outside Zürich, local forest boundaries now come from **© swisstopo swissTLM3D 2026-02**, land-cover classes `Wald` and `Wald offen`. These polygons are rasterized at 25 m. Each 50 m score cell contains up to four forest pixels, preserving gaps and partial coverage; its area is the sum of the covered pixels. Municipalities are assigned at the score-cell centre. The FOEN / WSL National Forest Inventory 2023 broadleaf percentage raster is averaged from 10 m to 50 m. Individual tree-species shares and canopy remain unknown and are omitted.
 
-Elevation and slope come from © swisstopo DHM25/200, a 200 m source reprojected from LV03 to LV95 and resampled to the grid. Aspect is resampled using sine/cosine components to avoid angle wraparound. The output's 100 m cells do not create 100 m terrain observations. National cell date 2023 describes tree mix; forest boundaries are the 2026 release.
+Elevation, slope and aspect still come from **DHM25/200**, a 200 m source reprojected from LV03 to LV95. Aspect is resampled using sine/cosine components. Smaller score cells add no terrain observations. The source panel distinguishes the swissTLM3D release from terrain sampling; 2026 is a release date, not a claim about every polygon's survey year. Source-file checksums are in `data/detailed-forest-sources.json`.
 
-The national overview aggregates 100 m forest samples into 85,969 forest-shaped 500 m groups. Select a canton to load finer detail. National weather uses 137 anchors on a 20 km lattice; Zürich adds its 10 km lattice. Compact regional interpolation smooths artificial anchor seams without adding measurements.
+The **national overview remains 85,969 generalized 500 m groups**, derived from the earlier swissTLMRegio 100 m mask. Local detail therefore can show forests absent in the overview. Local data loads automatically on the same Swiss map; selecting a canton only changes the view. The continuous map uses the national weather anchors consistently across source boundaries. Compact regional interpolation smooths artificial anchor seams without adding measurements. Legacy regional indexes remain available for API compatibility.
 
 `data/switzerland.svg` and `data/switzerland-map.js` provide national roads, boundaries, lakes and settlement labels from swissTLMRegio. The national protection overlay combines 36 Swiss-clipped swissTLMRegio protected-area polygons with Zürich's 594 reserve groups. It is **not a comprehensive national protection inventory**. National cell reserve overlap is unknown (null); warnings and boundaries remain visible. Sources and download checksums are in `data/national-sources.json` and each regional index.
 
@@ -84,7 +84,7 @@ The map explicitly marks GIS-ZH forest reserves with brown boundaries and diagon
 
 ## Adaptive map display
 
-At zoom levels 6–10, the map shows 1 km groups; at 11, 500 m groups; from 12 onwards, regional forest polygons: 50 m in Zürich, 100 m in other cantons, or 500 m in the national overview. Overview squares use forest-area-weighted means of the current species scores, not the highest score in a group. Their centers are forest-area-weighted locations and their screen size keeps them visible; squares are generalized summaries, not habitat boundaries. Overview squares are rendered with crisp edges, without a blur filter. Smooth regional variation comes from the interpolated weather inputs and continuous color scale. This changes presentation only, not cell scores. Forest shapes and reserve boundaries stay sharp. Clicking a summary shows its area-weighted score and factor breakdown, with a separate zoom button. Factor averages omit cells with missing values, so they need not recombine into the mean overall score. Species, weather and forest-type changes update the overview; the color scale follows visible tiles. Reserve boundaries remain overlaid at all scales and let clicks pass through to habitat tiles; protection warnings remain in the legend and cell details.
+At zoom levels 6–10, the map shows 1 km groups; at 11, 500 m groups; from 12 onwards, local forest geometry at 50 m throughout Switzerland, loaded for the current viewport. Overview squares use forest-area-weighted means of the current species scores, not the highest score in a group. Their centers are forest-area-weighted locations and their screen size keeps them visible; squares are generalized summaries, not habitat boundaries. Overview squares are rendered with crisp edges, without a blur filter. Smooth regional variation comes from the interpolated weather inputs and continuous color scale. This changes presentation only, not cell scores. Forest shapes and reserve boundaries stay sharp. Clicking a summary shows its area-weighted score and factor breakdown, with a separate zoom button. Factor averages omit cells with missing values, so they need not recombine into the mean overall score. Species, weather and forest-type changes update the overview; the color scale follows visible tiles. Reserve boundaries remain overlaid at all scales and let clicks pass through to habitat tiles; protection warnings remain in the legend and cell details.
 
 ## Extensible species profiles
 
@@ -100,7 +100,7 @@ All regions now use the same zoom-dependent swisstopo national map by default. T
 
 Only visible tiles plus a small pan buffer are requested, after zoom settles. No API key, backend tile proxy or paid map subscription is needed. Tile errors switch to the existing bundled basemap; selecting Swiss topo map retries. Bundled-map mode is available explicitly, including for offline use. Map requests go directly to swisstopo and reveal the viewed area. Source terms and attribution are in the third-party notices.
 
-This removes the Zürich/non-Zürich **cartographic** detail gap while online. It does not upgrade habitat measurements: Zürich scores still use 50 m cells and surveyed tree shares; other cantons retain 100 m cells and coarser/missing inputs, and the Swiss overview remains 500 m.
+This removes the Zürich/non-Zürich **cartographic** detail gap while online. It does not upgrade habitat measurements: Zürich scores still use 50 m cells and surveyed tree shares; other cantons now use 50 m cells with a 25 m swissTLM3D forest mask but still have coarser terrain and missing species/canopy inputs, and the Swiss overview remains 500 m.
 
 ### Overview rendering performance
 

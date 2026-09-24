@@ -26,5 +26,10 @@
     }
     return {view,cancel};
   }
-  window.SHROOMS_HABITAT={create,intersects};
+  function nearest(cells,lat,lon,maxMeters){
+    let best=null,distance=maxMeters;
+    for(const c of cells){const d=Math.hypot((c.lat-lat)*111320,(c.lon-lon)*111320*Math.cos(lat*Math.PI/180));if(d<distance){best=c;distance=d;}}
+    return best;
+  }
+  window.SHROOMS_HABITAT={create,intersects,nearest};
 })();

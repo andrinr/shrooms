@@ -2,9 +2,11 @@
 const fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib');
 const {unpack}=require('../server/data.cjs');
 function pack(key,value){const dest=path.join('data',key+'.js');fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,`window.SHROOMS_PACKED[${JSON.stringify(key)}]=${JSON.stringify(zlib.gzipSync(JSON.stringify(value)).toString('base64'))};\n`);}
-const regions=[],tiles=[];
+const existing=fs.existsSync('data/habitat/index.js')?unpack('.','habitat/index'):null;
+const detailed=existing?.metadata?.forestSource;
+const regions=detailed?existing.regions.filter(r=>r.id!=='zh'):[],tiles=detailed?existing.tiles.filter(t=>t.region!=='zh'):[];
 for(const region of unpack('.','regions').regions){
- if(region.id==='ch')continue;
+ if(region.id==='ch'||(detailed&&region.id!=='zh'))continue;
  const data=unpack('.',region.index),properties=new Map(data.cells.map(c=>[c.id,c]));
  const bounds=[[90,180],[-90,-180]];
  for(const tile of data.tiles){
@@ -15,4 +17,4 @@ for(const region of unpack('.','regions').regions){
  }
  regions.push({id:region.id,name:region.name,bounds,metadata:data.metadata});
 }
-pack('habitat/index',{regions,tiles});console.log(`${tiles.length} seamless local bundles across ${regions.length} cantons`);
+pack('habitat/index',{regions,tiles,...(detailed?{metadata:existing.metadata}:{})});console.log(`${tiles.length} seamless local bundles across ${regions.length} cantons`);

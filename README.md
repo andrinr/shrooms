@@ -17,7 +17,7 @@
 - **Five languages:** Deutsch, Français, Italiano, Rumantsch Grischun and English, including map explanations, warnings and accounts.
 - **Zoom-aware Swiss map:** swisstopo topography across all cantons, with roads, names and contours above the heatmap. Switch to the bundled offline map anytime; blocked tiles automatically fall back.
 - **One continuous Swiss map:** local datasets load automatically as you zoom and pan, including across canton boundaries. The canton selector is a shortcut, not a filter. [Sources and detailed forest-map candidates](docs/FOREST_DATA.md).
-- **Finer habitat detail:** 50 m cells in Zürich, 100 m elsewhere, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
+- **Finer habitat detail:** 50 m local cells across Switzerland, a 25 m swissTLM3D forest mask outside Zürich, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
 - **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
 - **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. Shown as context, not yet used in mushroom scores. [Data, resolution and modeling limits](docs/SOIL.md).
 - **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
@@ -64,7 +64,7 @@ GitHub Pages and direct `index.html` previews still work for the map. Accounts a
 | Region / source | Detail and limitations |
 | --- | --- |
 | Zürich: GIS-ZH surveys and DTM | 197,669 forest cells at 50 m; surveyed tree shares and canopy |
-| Other cantons: © swisstopo swissTLMRegio | Forest boundaries rasterized at 100 m; generalized regional mapping |
+| Other cantons: © swisstopo swissTLM3D 2026-02 | 50 m score cells, forest edges retained on a 25 m mask; terrain still 200 m |
 | FOEN / WSL National Forest Inventory | 2023 tree mix from a 10 m raster, aggregated to cells; individual host-tree shares and canopy unavailable |
 | © swisstopo DHM25/200 | National elevation, slope and aspect from a 200 m source |
 | Open-Meteo | Regional weather anchors; interpolation does not add local measurements |

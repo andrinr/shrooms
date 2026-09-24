@@ -55,8 +55,8 @@ Leaflet must do on subsequent zooms without simplifying the source forest shapes
 Decoded habitat downloads and the property index still remain in memory, so this
 is not a constant-memory renderer for arbitrarily large datasets.
 
-Habitat cells remain **50 m in Zürich, 100 m in other canton views, and 500 m in the
-national view**. National terrain is still based on a 200 m source. Subdividing those
-cells would not add terrain information. A future finer habitat model should use a
-finer national terrain source and forest boundaries, then validate species responses;
+Habitat cells remain **50 m in local views across Switzerland and 500 m in the
+national overview**. National terrain is still based on a 200 m source. Subdividing those
+cells would not add terrain information. The detailed forest mask now uses swissTLM3D at 25 m outside Zürich.
+A future finer terrain model should use a finer national elevation source, then validate species responses;
 the new 25 m pH data is one genuine additional input toward that model.

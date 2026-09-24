@@ -20,8 +20,14 @@ test('seamless bundles retain regional resolution, geometry, provenance and save
  let count=0;const ids=new Set();
  for(const tile of manifest.tiles){
   const features=unpack('.',tile.key);assert.equal(features.length,tile.count);count+=features.length;
-  for(const f of features){const c=f.properties;assert.ok(!ids.has(c.id));ids.add(c.id);assert.equal(c.id,`${tile.region}:${c.sourceId}`);assert.equal(c.tile,tile.key);assert.equal(c.cellSizeMeters,tile.region==='zh'?50:100);assert.ok(f.geometry.coordinates.length);assert.ok(c.terrainResolutionMeters>0);}
+  for(const f of features){const c=f.properties;assert.ok(!ids.has(c.id));ids.add(c.id);assert.equal(c.id,`${tile.region}:${c.sourceId}`);assert.equal(c.tile,tile.key);assert.equal(c.cellSizeMeters,50);assert.ok(c.area>0&&c.area<=.25);assert.ok(c.lat>45.7&&c.lat<47.9&&c.lon>5.8&&c.lon<10.7);assert.ok(c.broadleaf===null||(c.broadleaf>=0&&c.broadleaf<=100));assert.ok(c.slope===null||(c.slope>=0&&c.slope<90));if(tile.region!=='zh'){assert.equal(c.maskResolutionMeters,25);assert.equal(c.terrainResolutionMeters,200);assert.equal(c.forestSource,'swissTLM3D 2026-02');assert.equal(c.area,c.forest/100*.25)};assert.ok(f.geometry.coordinates.length);assert.ok(c.terrainResolutionMeters>0);}
  }
- const expected=unpack('.','regions').regions.filter(r=>r.id!=='ch').reduce((n,r)=>n+unpack('.',r.index).cells.length,0);assert.equal(count,expected);
+ const expected=manifest.regions.reduce((n,r)=>n+r.metadata.cellCount,0);assert.equal(count,expected);assert.ok(count>4000000);
  const api=createData('.');assert.ok(api.get('habitat/index'));assert.ok(api.get(manifest.tiles[0].key));assert.equal(api.get('habitat/tiles/zh/9999-9999'),null);
+});
+
+test('legacy saved coordinates resolve to nearby new fine cells without mutating saved spots',()=>{
+ const cells=[{id:'new',lat:46,lon:9},{id:'far',lat:47,lon:9}];
+ assert.equal(context.window.SHROOMS_HABITAT.nearest(cells,46.0002,9,150).id,'new');
+ assert.equal(context.window.SHROOMS_HABITAT.nearest(cells,45,9,150),null);
 });

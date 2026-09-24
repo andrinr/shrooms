@@ -1,0 +1,57 @@
+{
+  "product": "swissTLM3D 2026-02",
+  "url": "https://data.geo.admin.ch/ch.swisstopo.swisstlm3d/swisstlm3d_2026-02/swisstlm3d_2026-02_2056_5728.shp.zip",
+  "license": "swisstopo open-data terms",
+  "files": [
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_OST.CPG",
+      "sha256": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824",
+      "bytes": 5
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_OST.dbf",
+      "sha256": "ab80eda4fb3eb86eb7dedecf2c6cc8befded2bbdb33fa5344a03576eced38c93",
+      "bytes": 104742675
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_OST.prj",
+      "sha256": "f160fd6f149ff8288abd2a59f56556d034e87a0fda3dbf463761faf4210c30f5",
+      "bytes": 600
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_OST.shp",
+      "sha256": "e7f326df02211aa92400abc7a6259f12890b2a13b78fd2d94cfecb34b04ced77",
+      "bytes": 1501877768
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_OST.shx",
+      "sha256": "09a4e35cdca6ccaad3ec4a8341107462c062d6a2ec17556ef8e2e96c0fc946dc",
+      "bytes": 3826300
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_WEST.CPG",
+      "sha256": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824",
+      "bytes": 5
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_WEST.dbf",
+      "sha256": "928bed03e888a063153a2419ca0687e57baa12d1b9fcf8d3ce617259fbcb7af5",
+      "bytes": 80984460
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_WEST.prj",
+      "sha256": "f160fd6f149ff8288abd2a59f56556d034e87a0fda3dbf463761faf4210c30f5",
+      "bytes": 600
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_WEST.shp",
+      "sha256": "6d85c68c1fc869cadcb57df7556c7d36e501a21b5b91ead20f1e02219e85893f",
+      "bytes": 1073616800
+    },
+    {
+      "name": "swissTLM3D_TLM_BODENBEDECKUNG_WEST.shx",
+      "sha256": "7466ea4d3ccf83bb74e413c44b2530c494a38d90498411ead6ebbdc328432f73",
+      "bytes": 2958420
+    }
+  ]
+}

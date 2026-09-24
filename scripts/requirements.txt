@@ -4,3 +4,4 @@ pyproj==3.6.1
 rasterio==1.4.3
 
 ijson==3.5.1
+pyshp==2.3.1

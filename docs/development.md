@@ -108,3 +108,26 @@ The frontend supports `de`, `fr`, `it`, `rm` and `en`. The header selector remem
 `src/locales.js` is the bundled translation catalog: English source text followed by Swiss Standard German, French, Italian and Rumantsch Grischun. Named placeholders must match across all five columns. `src/i18n.js` translates UI text and accessible labels, including subsequently rendered map/account panels. It never changes form values. Scientific names, mapped place names and private notebook content remain unchanged; Romansh mushroom labels use scientific names rather than uncertain regional names. No translation service or network request is used.
 
 Add entries whenever introducing interface text, including server messages shown to users. Tests check catalog completeness, placeholder parity, preference fallback and dynamic translations. Language tests are structural, not linguistic certification; native-language review is welcome, especially for Romansh and collection-rule wording. The linked official rules remain authoritative. Repository developer documentation remains in English.
+
+### Detailed national forest grid
+
+The continuous map's current local bundles use swissTLM3D 2026-02 outside Zürich.
+After preparing the original national dependencies, install `scripts/requirements.txt`
+and run these in the Python preparation environment:
+
+```sh
+python scripts/download_tlm3d.py
+python scripts/build_detailed_habitat.py
+```
+
+The first command uses byte ranges to extract only land-cover archive members.
+The second preserves Zürich's stand survey, builds 50 m local score cells with a
+25 m forest mask elsewhere, and updates `data/habitat/index.js`. Raw inputs and
+intermediate rasters are cached, not deployed. Delete the matching intermediate
+rasters deliberately before processing a new source release. Original download
+checksums are recorded in `data/detailed-forest-sources.json`.
+
+Re-running `build_seamless.cjs` refreshes Zürich without downgrading an existing
+swissTLM3D build. Legacy 100 m regional indexes remain for API compatibility and the
+national overview; they are not used for the new close-up map. See
+[forest data](FOREST_DATA.md) for precise source and resolution limits.

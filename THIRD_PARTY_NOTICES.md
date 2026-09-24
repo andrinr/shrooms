@@ -67,3 +67,16 @@ manifest. The reproducible transformation is `scripts/build_soil.py`.
 ## Seamless habitat bundles
 
 `data/habitat/` repackages the existing GIS-ZH and national habitat datasets, preserving their source properties and geometry. All source attributions and terms listed above remain applicable. `scripts/build_seamless.cjs` adds canton-qualified identifiers and per-cell resolution metadata; it does not replace swissTLMRegio with swissTLM3D.
+
+## Detailed national forest coverage
+
+Local bundles outside Zürich now derive forest coverage from **© swisstopo,
+swissTLM3D 2026-02**, land-cover classes `Wald` and `Wald offen`. The official
+[product description](https://www.swisstopo.admin.ch/en/landscape-model-swisstlm3d)
+and [swisstopo open-data terms](https://www.swisstopo.admin.ch/en/faq-free-geodata)
+apply. `scripts/download_tlm3d.py` extracts the land-cover files from the official
+Shapefile ZIP. `scripts/build_detailed_habitat.py` rasterizes their boundaries at
+25 m and builds forest-shaped 50 m score cells, retaining coverage area and null
+values. NFI tree mix is averaged from its 10 m raster. Terrain remains the 200 m
+DHM25/200 source. This derivative is not endorsed by swisstopo. National overview
+and legacy regional API data still use the older swissTLMRegio-derived bundles.
