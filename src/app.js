@@ -170,20 +170,28 @@
     }
 
     L.control.zoom({position:'bottomright'}).addTo(state.map);
-    const savedMarkers=L.layerGroup().addTo(state.map);
+    const savedMarkers=L.layerGroup().addTo(state.map),savedById=new Map();
     function refreshSavedMarkers(){
       if(!window.SHROOMS_NOTEBOOK)return;
       let spots;try{spots=window.SHROOMS_NOTEBOOK.create(localStorage).read();}catch{return;}
-      savedMarkers.clearLayers();
+      savedMarkers.clearLayers();savedById.clear();
       for(const spot of spots){
         const popup=document.createElement('div');popup.className='saved-map-popup';
         const name=document.createElement('strong');name.dataset.noTranslate='';name.textContent=spot.name;popup.append(name);
         const description=document.createElement('p');description.textContent=window.SHROOMS_I18N.t(species[spot.species]?.name||spot.species);popup.append(description);
         const open=document.createElement('button');open.type='button';open.textContent=window.SHROOMS_I18N.t('Open saved spot');open.onclick=()=>window.dispatchEvent(new CustomEvent('shrooms:open-spot',{detail:spot}));popup.append(open);
-        L.marker([spot.lat,spot.lon],{title:spot.name,alt:spot.name,icon:L.divIcon({className:'saved-spot-marker',html:'<span aria-hidden="true">★</span>',iconSize:[30,30],iconAnchor:[15,15]})}).on('add',function(){const element=this.getElement();element?.setAttribute('aria-label',spot.name);element?.setAttribute('data-no-translate','');}).bindPopup(popup).addTo(savedMarkers);
+        const marker=L.marker([spot.lat,spot.lon],{title:spot.name,alt:spot.name,icon:L.divIcon({className:'saved-spot-marker',html:'<span aria-hidden="true">★</span>',iconSize:[30,30],iconAnchor:[15,15]})}).on('add',function(){const element=this.getElement();element?.setAttribute('aria-label',spot.name);element?.setAttribute('data-no-translate','');}).bindPopup(popup).addTo(savedMarkers);
+        savedById.set(spot.id,marker);
       }
     }
     window.addEventListener('shrooms:notebook-change',refreshSavedMarkers);
+    window.addEventListener('shrooms:spot-saved',event=>{
+      const spot=event.detail;
+      // Refresh explicitly too: this path must not rely on a storage event in the same tab.
+      refreshSavedMarkers();
+      state.map.setView([spot.lat,spot.lon],Math.max(14,state.map.getZoom()));
+      savedById.get(spot.id)?.openPopup();
+    });
     window.addEventListener('storage',e=>{if(e.key===window.SHROOMS_NOTEBOOK?.key||e.key===null)refreshSavedMarkers();});
     refreshSavedMarkers();
     state.layer=L.featureGroup().addTo(state.map);
