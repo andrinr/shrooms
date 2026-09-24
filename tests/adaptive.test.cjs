@@ -3,7 +3,7 @@ const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileS
 const adaptive=context.window.SHROOMS_ADAPTIVE;
 test('zoom levels move from canton overview to the original fine cells',()=>{
  assert.equal(adaptive.resolution(8),1000);assert.equal(adaptive.resolution(10),1000);
- assert.equal(adaptive.resolution(11),500);assert.equal(adaptive.resolution(12),500);assert.equal(adaptive.resolution(13),500);assert.equal(adaptive.resolution(14),100);
+ assert.equal(adaptive.resolution(11),500);assert.equal(adaptive.resolution(12),500);assert.equal(adaptive.resolution(12.75),500);assert.equal(adaptive.resolution(13),100);assert.equal(adaptive.resolution(14),100);
 });
 test('overview groups preserve all cells and weight scores by actual forest area',()=>{
  const cells=[{id:'0-0',area:1,lat:47,lon:8,treeKnown:1,conifer:100,broadleaf:0},{id:'2-2',area:.25,lat:48,lon:9,treeKnown:1,conifer:0,broadleaf:100},{id:'20-0',area:1,lat:49,lon:9,treeKnown:1,conifer:50,broadleaf:50}];

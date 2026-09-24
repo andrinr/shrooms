@@ -96,4 +96,4 @@ Original code, scripts, documentation and artwork are **[MIT licensed](LICENSE)*
 
 The account UI and public account endpoints are retired. Existing server databases are preserved, not deleted or automatically copied into browser storage. Previously exported spot JSON files can be imported into the notebook. Local storage is specific to the browser and site address; it is not encrypted or synchronized.
 
-Scores are species-specific. The details show each factor’s effective weight and multiplier, plus the selected cell’s ranking within the visible forest cells. This relative comparison changes with the viewport; the underlying habitat score does not. Fine 50 m geometry is loaded from zoom level 14; wider views use lightweight summaries.
+Scores are species-specific. The details show each factor’s effective weight and multiplier, plus the selected cell’s ranking within the visible forest cells. This relative comparison changes with the viewport; the underlying habitat score does not. Fine 50 m geometry is loaded from zoom level 13; wider views use lightweight summaries.
