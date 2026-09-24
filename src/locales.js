@@ -56,6 +56,7 @@ Before you go|Vor dem Sammeln|Avant de partir|Prima di partire|Avant che partir
 SWITZERLAND|SCHWEIZ|SUISSE|SVIZZERA|SVIZRA
 Switzerland|Schweiz|Suisse|Svizzera|Svizra
 A FIELD GUIDE FOR THE WANDERERS|FÜR ALLE, DIE GERNE PILZE SUCHEN|UN GUIDE POUR LES PROMENEURS|UNA GUIDA PER CHI ESPLORA|IN GUID PER EXPLORATURS
+Follow the|Folge den|Suivez les|Segui i|Suonda ils
 Follow|Folge|Suivez|Segui|Suonda
 the|den|les|i|ils
 fungi.|Pilzen.|champignons.|funghi.|bulieus.
