@@ -16,7 +16,7 @@
 - **Locate yourself:** an optional browser location button shows your position and accuracy on the map, without saving or sending coordinates to the backend. Online map tiles reveal the viewed area to swisstopo; use the bundled map to avoid those requests.
 - **Five languages:** Deutsch, Français, Italiano, Rumantsch Grischun and English, including map explanations, warnings and accounts.
 - **Zoom-aware Swiss map:** swisstopo topography across all cantons, with roads, names and contours above the heatmap. Switch to the bundled offline map anytime; blocked tiles automatically fall back.
-- **All 26 cantons:** a lightweight Swiss overview and regional data loaded on demand.
+- **One continuous Swiss map:** local datasets load automatically as you zoom and pan, including across canton boundaries. The canton selector is a shortcut, not a filter. [Sources and detailed forest-map candidates](docs/FOREST_DATA.md).
 - **Finer habitat detail:** 50 m cells in Zürich, 100 m elsewhere, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
 - **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
 - **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. Shown as context, not yet used in mushroom scores. [Data, resolution and modeling limits](docs/SOIL.md).

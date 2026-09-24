@@ -63,3 +63,7 @@ measurements at each pixel; their presence does not establish mushroom abundance
 edibility, or soil contamination safety. WSL does not endorse shrooms or its scores.
 Source download URLs and SHA-256 checksums are in the packed `data/soil/index.js`
 manifest. The reproducible transformation is `scripts/build_soil.py`.
+
+## Seamless habitat bundles
+
+`data/habitat/` repackages the existing GIS-ZH and national habitat datasets, preserving their source properties and geometry. All source attributions and terms listed above remain applicable. `scripts/build_seamless.cjs` adds canton-qualified identifiers and per-cell resolution metadata; it does not replace swissTLMRegio with swissTLM3D.

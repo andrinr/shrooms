@@ -1,6 +1,11 @@
 /* Columns: English, Swiss Standard German, French, Italian, Rumantsch Grischun.
    Place names, scientific names and private notebook content retain their original form. */
 window.SHROOMS_MESSAGES=String.raw`
+JUMP TO A CANTON|ZU EINEM KANTON SPRINGEN|ALLER À UN CANTON|VAI A UN CANTONE|IR AD IN CHANTUN
+Jump to a canton|Zu einem Kanton springen|Aller à un canton|Vai a un cantone|Ir ad in chantun
+All Switzerland|Ganze Schweiz|Toute la Suisse|Tutta la Svizzera|Entira Svizra
+Show all Switzerland|Ganze Schweiz anzeigen|Afficher toute la Suisse|Mostra tutta la Svizzera|Mussar l’entira Svizra
+Ranked from the visible map. Municipality search covers all Switzerland.|Nach Eignung im Kartenausschnitt sortiert. Die Gemeindesuche umfasst die ganze Schweiz.|Classement selon la zone visible. La recherche de communes couvre toute la Suisse.|Classifica relativa alla zona visibile. La ricerca dei comuni copre tutta la Svizzera.|Ordinà tenor la zona visibla. La tschertga da vischnancas cumpiglia l’entira Svizra.
 SOIL ACIDITY|BODENSÄURE|ACIDITÉ DU SOL|ACIDITÀ DEL SUOLO|ACIDITAD DAL TERRÈN
 Loading soil prediction…|Bodenmodell wird geladen…|Chargement du modèle de sol…|Caricamento del modello del suolo…|Chargiar il model dal terrèn…
 Soil data could not load. Select the cell to retry.|Bodendaten konnten nicht geladen werden. Wähle die Fläche erneut.|Les données du sol n’ont pas pu être chargées. Sélectionnez à nouveau la cellule.|Impossibile caricare i dati del suolo. Seleziona nuovamente la cella.|Las datas dal terrèn n’han betg pudì vegnir chargiadas. Tscherna danovamain la cella.
