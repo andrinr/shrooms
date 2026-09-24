@@ -108,7 +108,9 @@ This removes the Zürich/non-Zürich **cartographic** detail gap while online. I
 
 ### Overview rendering performance
 
-Overview squares are painted into small canvas map tiles rather than individual Leaflet rectangles. A spatial tile index handles square drawing and click selection, including squares crossing tile seams. Tiles cache projected centers at the active zoom, and panning reuses them when the scale is unchanged. Color changes redraw the small tile set. Viewport statistics and sidebar updates wait for a 100 ms pause in map movement; the existing map remains visible during zoom animations. Detail geometry and numeric scores are unchanged.
+Overview colors are clipped to actual swissTLM3D forest footprints, drawn in canvas map tiles without a Leaflet layer per cell. The 25 m source mask is simplified by 100 m for national views and 15 m for intermediate views. Thin woodland has a subpixel outline at wider zooms for legibility. Colors remain 500 m cell estimates (or 1 km area-weighted summaries); finer outlines do not create finer scores. Only forests intersecting existing overview cells are shown; some newly mapped forests appear only in local detail. Holes remain transparent and clicks test the visible forest footprint.
+
+`data/overview-forest/` contains compressed spatial bundles in both outline resolutions. Only intersecting bundles load; downloads use three concurrent requests, and geometry projections are cached. Source coverage comes from the same swissTLM3D mask described above; Zürich’s richer stand boundaries still appear in close local views. Rebuild with `.venv/bin/python scripts/build_overview_forest.py` after preparing `.cache/tlm3d-forest25.tif`. The backend allowlist and static frontend serve the same files.
 
 ## Reading contributions and relative ranks
 

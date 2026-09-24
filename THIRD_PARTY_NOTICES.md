@@ -82,3 +82,5 @@ DHM25/200 source. This derivative is not endorsed by swisstopo. National overvie
 and legacy regional API data still use the older swissTLMRegio-derived bundles.
 
 The `soilPh` fields joined into habitat tiles and regional indexes are derived from the same WSL / EnviDat 484 soil rasters and retain their CC BY-SA 4.0 attribution and license. See `docs/SOIL.md`.
+
+`data/overview-forest/` contains simplified swissTLM3D forest footprints derived from the 2026-02 forest mask. Attribution: © swisstopo, under the swisstopo open-data terms. These outlines do not increase the resolution of the underlying habitat scores.

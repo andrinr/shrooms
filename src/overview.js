@@ -1,51 +1,62 @@
-/* Draw overview squares in canvas tiles, without a Leaflet layer per cell. */
+/* Real forest footprints on canvas tiles; no Leaflet object per overview cell. */
 (function(){
-  const halfSize=(size,zoom)=>Math.min(size===1000?5:4.5,Math.max(1.3,5*2**(zoom-10)));
-  function create(L,map){
-    let summaries=[],size=1000,color=()=>'',click=()=>{},version='',projection=null;
-    function project(zoom){
-      if(projection?.zoom===zoom)return projection;
-      const bins=new Map(),half=halfSize(size,zoom);
-      summaries.forEach((summary,key)=>{
-        const p=map.project([summary.lat,summary.lon],zoom),item={x:p.x,y:p.y,key,summary};
-        // Include edge-crossing squares in both tiles so seams remain invisible.
-        for(let x=Math.floor((p.x-half)/256);x<=Math.floor((p.x+half)/256);x++)
-          for(let y=Math.floor((p.y-half)/256);y<=Math.floor((p.y+half)/256);y++){
-            const id=`${x}:${y}`;if(!bins.has(id))bins.set(id,[]);bins.get(id).push(item);
-          }
-      });
-      projection={zoom,bins,half};return projection;
+  function inside(point,ring){let hit=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>point[1])!==(b[1]>point[1])&&point[0]<(b[0]-a[0])*(point[1]-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;}
+  const contains=(geometry,point)=>geometry.coordinates.some(poly=>inside(point,poly[0])&&!poly.slice(1).some(r=>inside(point,r)));
+  function create(L,map,{manifest,load,onError=()=>{}}){
+    let summaries=[],size,color=()=>'',click=()=>{},version='',generation=0;
+    const members=new Map(),cache=new Map(),projected=new Map(),queue=[];let running=0;
+    function drain(){while(running<3&&queue.length){const job=queue.shift();running++;job().finally(()=>{running--;drain();});}}
+    function get(key){
+      if(!cache.has(key)){
+        const promise=new Promise((resolve,reject)=>{queue.push(async()=>{try{resolve(await load(key));}catch(e){cache.delete(key);reject(e);}});drain();});cache.set(key,promise);
+        while(cache.size>48){const oldest=cache.keys().next().value;cache.delete(oldest);load.release?.(oldest);}
+      }return cache.get(key);
+    }
+    function tilesAt(bounds){return manifest.tiles.filter(t=>t.bounds[0][0]<=bounds[1][0]&&t.bounds[1][0]>=bounds[0][0]&&t.bounds[0][1]<=bounds[1][1]&&t.bounds[1][1]>=bounds[0][1]);}
+    function project(key,features,z){
+      const id=`${key}:${z}`;if(projected.has(id))return projected.get(id);
+      const values=features.map(f=>{let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+        const polygons=f.geometry.coordinates.map(poly=>poly.map(ring=>ring.map(([lon,lat])=>{const p=map.project([lat,lon],z);x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y);return [p.x,p.y];})));
+        return {id:f.id,polygons,bounds:[x0,y0,x1,y1]};});
+      projected.set(id,values);while(projected.size>24)projected.delete(projected.keys().next().value);return values;
     }
     const Tiles=L.GridLayer.extend({
-      createTile(coords){
-        const tile=document.createElement('canvas'),ratio=Math.min(window.devicePixelRatio||1,2);
-        tile.width=tile.height=256*ratio;
-        const ctx=tile.getContext('2d');ctx.scale(ratio,ratio);
-        const {bins,half}=project(coords.z);
-        ctx.globalAlpha=.78;
-        for(const item of bins.get(`${coords.x}:${coords.y}`)||[]){
-          ctx.fillStyle=color(item.summary);
-          ctx.fillRect(item.x-coords.x*256-half,item.y-coords.y*256-half,2*half,2*half);
-        }
+      createTile(coords,done){
+        const tile=document.createElement('canvas'),ratio=Math.min(window.devicePixelRatio||1,2),current=generation;
+        tile.width=tile.height=256*ratio;const ctx=tile.getContext('2d');ctx.scale(ratio,ratio);
+        const ox=coords.x*256,oy=coords.y*256,nw=map.unproject([ox-1,oy-1],coords.z),se=map.unproject([ox+257,oy+257],coords.z);
+        Promise.all(tilesAt([[se.lat,nw.lng],[nw.lat,se.lng]]).map(async meta=>{
+          const key=coords.z<=10?meta.coarseKey:meta.key;
+          const features=await get(key);if(current!==generation)return;
+          for(const f of project(key,features,coords.z)){
+            const group=members.get(f.id);if(group===undefined)continue;
+            const [x0,y0,x1,y1]=f.bounds;if(x1<ox-1||x0>ox+257||y1<oy-1||y0>oy+257)continue;
+            ctx.fillStyle=ctx.strokeStyle=color(summaries[group]);ctx.globalAlpha=.83;
+            ctx.beginPath();for(const poly of f.polygons)for(const ring of poly){ring.forEach(([x,y],i)=>i?ctx.lineTo(x-ox,y-oy):ctx.moveTo(x-ox,y-oy));ctx.closePath();}
+            ctx.fill('evenodd');
+            // A subpixel outline keeps narrow woodland legible in the national view.
+            if(coords.z<=10){ctx.lineWidth=.65;ctx.lineJoin='round';ctx.stroke();}
+          }
+        })).then(()=>done(null,tile)).catch(error=>{if(current===generation)onError(error);done(null,tile);});
         return tile;
       },
       onAdd(map){L.GridLayer.prototype.onAdd.call(this,map);map.on('click',inspect);},
-      onRemove(map){map.off('click',inspect);L.GridLayer.prototype.onRemove.call(this,map);}
+      onRemove(map){generation++;map.off('click',inspect);L.GridLayer.prototype.onRemove.call(this,map);}
     });
-    function inspect(event){
-      const zoom=Math.round(map.getZoom()),p=map.project(event.latlng,zoom),{bins,half}=project(zoom);
-      const candidates=bins.get(`${Math.floor(p.x/256)}:${Math.floor(p.y/256)}`)||[];
-      // Last painted square wins, matching the previous canvas renderer.
-      for(let i=candidates.length-1;i>=0;i--){const item=candidates[i];if(Math.abs(item.x-p.x)<=half&&Math.abs(item.y-p.y)<=half){click(item.summary,item.key);break;}}
+    async function inspect(event){
+      const current=generation,point=[event.latlng.lng,event.latlng.lat];
+      for(const meta of tilesAt([[point[1],point[0]],[point[1],point[0]]])){
+        try{for(const f of await get(Math.round(map.getZoom())<=10?meta.coarseKey:meta.key)){if(current!==generation)return;const group=members.get(f.id);if(group!==undefined&&contains(f.geometry,point)){click(summaries[group],group);return;}}}catch(e){onError(e);}
+      }
     }
     const layer=new Tiles({pane:'overviewHeat',tileSize:256,keepBuffer:1,updateWhenIdle:true,updateWhenZooming:false,noWrap:true});
     layer.setData=(items,meters,paint,onClick,key)=>{
       const changed=items!==summaries||meters!==size||key!==version;
-      if(items!==summaries||meters!==size)projection=null;
+      if(items!==summaries){members.clear();items.forEach((item,i)=>item.members.forEach(id=>members.set(id,i)));}
       summaries=items;size=meters;color=paint;click=onClick;version=key;
-      if(changed&&map.hasLayer(layer))layer.redraw();
+      if(changed){generation++;if(map.hasLayer(layer))layer.redraw();}
     };
     return layer;
   }
-  window.SHROOMS_OVERVIEW={create,halfSize};
+  window.SHROOMS_OVERVIEW={create,contains};
 })();

@@ -28,12 +28,14 @@ function createData(root){
  const tileKeys=new Set(index.tiles.map(t=>t.key));
  const soilIndex=unpack(root,'soil/index');
  const habitat=unpack(root,'habitat/index');
+ const overview=unpack(root,'overview-forest/index');
+ const overviewKeys=new Set(['overview-forest/index',...overview.tiles.flatMap(t=>[t.key,t.coarseKey])]);
  const habitatKeys=new Set(['habitat/index',...habitat.tiles.map(t=>t.key)]);
  const soilKeys=new Set(['soil/index',...soilIndex.tiles]);
  const cells=new Map(index.cells.map(c=>[c.id,c]));
  const cache=new Map();let cacheBytes=0;
  function get(key){
-  if(!['index','protected','national-protected','regions','switzerland-map'].includes(key)&&!tileKeys.has(key)&&!soilKeys.has(key)&&!habitatKeys.has(key)){
+  if(!['index','protected','national-protected','regions','switzerland-map'].includes(key)&&!tileKeys.has(key)&&!soilKeys.has(key)&&!habitatKeys.has(key)&&!overviewKeys.has(key)){
    const match=key.match(/^regions\/([a-z]{2})\/(index|tiles\/\d+-\d+)$/);
    if(!match)return null;const regional=region(match[1]);if(!regional||(match[2]!=='index'&&!regional.tiles.some(t=>t.key===key)))return null;
   }

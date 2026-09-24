@@ -5,6 +5,7 @@
   const requested=new URLSearchParams(location.search).get('region')||'ch';
   const region=catalog.regions.find(r=>r.id==='ch');
   const manifest=await window.SHROOMS_LOAD('habitat/index');
+  const forestOverview=await window.SHROOMS_LOAD('overview-forest/index');
   const habitat=window.SHROOMS_HABITAT.create(manifest,window.SHROOMS_LOAD);
   window.SHROOMS_REGION='ch';window.SHROOMS_SEAMLESS=true;
   $('region').innerHTML=catalog.regions.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
@@ -246,7 +247,7 @@
     const overviewPane=state.map.createPane('overviewHeat');
     overviewPane.style.zIndex=410;
     overviewPane.style.pointerEvents='none';
-    state.overview=window.SHROOMS_OVERVIEW.create(L,state.map);
+    state.overview=window.SHROOMS_OVERVIEW.create(L,state.map,{manifest:forestOverview,load:window.SHROOMS_LOAD,onError:()=>{$('geometry-status').hidden=false;}});
     let viewTimer;
     state.map.on('movestart',()=>{clearTimeout(viewTimer);detailTiles.cancel();habitat.cancel();});
     state.map.on('moveend',()=>{clearTimeout(viewTimer);viewTimer=setTimeout(()=>{updateResolution();renderList();renderDetail();loadVisibleTiles();},100);});const initial=manifest.regions.find(r=>r.id===requested);if(initial)state.map.fitBounds(initial.bounds,{padding:[20,20]});else all();updateResolution();loadVisibleTiles();select(state.selected,false);
@@ -271,7 +272,7 @@
     state.map.getPane('overviewHeat').style.display=size===100?'none':'';
     document.querySelector('.heatmap-caption').textContent=size===100?`${state.onlineMap?'Swiss topo map':'Offline basemap'} · ${gridSize} m forest scores`:`${state.onlineMap?'Swiss topo map':'Offline basemap'} · ${size===1000?'1 km':'500 m'} overview · zoom for ${gridSize} m detail`;
     const visibleBounds=state.map.getBounds();
-    if(size!==100&&!overviewSummaries.has(size))overviewSummaries.set(size,overviewGroups.get(size).map(group=>window.SHROOMS_ADAPTIVE.summarize(group,state.scores)));
+    if(size!==100&&!overviewSummaries.has(size))overviewSummaries.set(size,overviewGroups.get(size).map(group=>({...window.SHROOMS_ADAPTIVE.summarize(group,state.scores),members:group.map(c=>c.id)})));
     const displayed=size===100?cells:overviewSummaries.get(size);
     const south=visibleBounds.getSouth(),north=visibleBounds.getNorth(),west=visibleBounds.getWest(),east=visibleBounds.getEast();
     const values=displayed.filter(c=>c.lat>=south&&c.lat<=north&&c.lon>=west&&c.lon<=east).map(c=>size===100?scored(c).value:c.value);
