@@ -2,13 +2,17 @@
 
 [Back to shrooms](../README.md)
 
-## Recommended setup
+## Static hosting (recommended)
+
+Deploy `_site/` to GitHub Pages or another static host after `npm run build`. The map and browser notebook work without a backend. Saved spots stay in the current browser and origin; use Export / Import to transfer them. Clearing site data removes them.
+
+## Optional weather backend
 
 Use one Linux VPS with **2 CPU cores, 4 GB RAM and 20 GB or more disk**, Docker Engine and the Compose plugin. The application runs as an unprivileged user behind Caddy. SQLite and the weather cache live in a persistent volume. This is a single-instance deployment; do not run independent replicas against copied databases.
 
 A small European Hetzner cloud server is a suitable starting point. Allow roughly CHF 5–10/month before domain and off-server backups; confirm the current [provider pricing](https://www.hetzner.com/cloud/) and [price adjustments](https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/) when ordering. No provider account or paid resource is provisioned by this repository. Any comparable Docker host works.
 
-Free hosts with ephemeral disks or idle shutdown are unsuitable for this configuration: accounts need persistent storage and weather updates need a running process.
+Free hosts with ephemeral disks or idle shutdown are unsuitable for this configuration: scheduled weather updates need a running process. The browser notebook does not depend on server storage.
 
 ## First deployment
 
@@ -30,7 +34,7 @@ docker compose logs --tail=50 app proxy
 
 Visit `https://YOUR_DOMAIN`. Caddy obtains and renews TLS certificates. `/api/health` reports application health and weather freshness separately; an upstream weather outage should not take the map offline.
 
-Create an account through the website, save its recovery code and save a test spot. Restart the app and verify that the spot remains. Account data must never be stored in the public frontend directory.
+Save a test spot in the browser notebook and reload the page. Export a backup and check that importing it does not duplicate the spot. The retired account endpoints return HTTP 410; existing databases remain untouched.
 
 ## Configuration
 
@@ -48,7 +52,9 @@ Production cookies are HttpOnly, SameSite=Lax and Secure. Mutations validate the
 
 The [free weather endpoint](https://open-meteo.com/en/pricing) is restricted to non-commercial use. A supplied commercial key switches the backend to the customer endpoint. Updates run every six hours; incomplete responses retain the last snapshot and failures back off for 15 minutes. Weather older than 48 hours is omitted from scores.
 
-## Backups
+## Legacy server backups
+
+These preserve old account data, if present. They do not back up browser notebooks; use the notebook’s Export button for those.
 
 Run an online SQLite backup rather than copying the active database file alone:
 

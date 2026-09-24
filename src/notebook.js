@@ -1,0 +1,24 @@
+(()=>{
+ const button=document.createElement('button');button.type='button';button.className='account-trigger';button.textContent='Saved spots';document.querySelector('header').append(button);
+ const dialog=document.createElement('dialog');dialog.className='account-dialog';dialog.setAttribute('aria-labelledby','notebook-title');dialog.innerHTML='<button type="button" class="account-close" aria-label="Close notebook">×</button><div id="notebook-content"></div><p id="notebook-error" role="status"></p>';document.body.append(dialog);
+ const content=dialog.querySelector('#notebook-content'),error=dialog.querySelector('#notebook-error');
+ const store=window.SHROOMS_NOTEBOOK.create({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
+ const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function attempt(fn){error.textContent='';try{fn();}catch(e){error.textContent=['Invalid notebook file.','Your notebook can hold up to 500 spots.'].includes(e.message)?e.message:'Could not read or save your notebook. Check browser storage permissions and available space.';}}
+ dialog.querySelector('.account-close').onclick=()=>dialog.close();
+ document.querySelector('#detail').addEventListener('click',e=>{if(e.target.closest('.save-spot-direct')){dialog.showModal();attempt(()=>{render();content.querySelector('#save-current').click();});}});
+ button.onclick=()=>{dialog.showModal();attempt(render);};
+ function render(){
+  const spots=store.read();
+  content.innerHTML=`<h2 id="notebook-title">Your forest notebook</h2><p>Saved only in this browser. Export a backup before clearing browser data or changing devices.</p><button id="save-current">Save selected forest cell</button><div class="saved-spots">${spots.map(s=>`<article><button class="open-spot" data-id="${s.id}"><strong data-no-translate>${escape(s.name)}</strong><small data-no-translate>${escape(s.species)} · ${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</small></button><p data-no-translate>${escape(s.notes)}</p><div class="account-actions"><button class="edit-spot" data-id="${s.id}">Edit</button><button class="delete-spot" data-id="${s.id}">Delete</button></div></article>`).join('')||'<p>No saved spots yet. Choose a forest on the map, then save it here.</p>'}</div><div class="account-actions"><button id="export-spots">Export my spots</button><button id="import-spots">Import spots</button><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
+  content.querySelector('#save-current').onclick=()=>attempt(()=>{const c=window.SHROOMS_SELECTED?.();if(!c){error.textContent='Choose a forest cell on the map first.';return;}editor({name:c.name,lat:c.lat,lon:c.lon,species:c.species,cellId:`${c.region}:${c.id}`,notes:''});});
+  content.querySelectorAll('.open-spot').forEach(b=>b.onclick=()=>{window.dispatchEvent(new CustomEvent('shrooms:open-spot',{detail:spots.find(s=>s.id===b.dataset.id)}));dialog.close();location.hash='explore';});
+  content.querySelectorAll('.edit-spot').forEach(b=>b.onclick=()=>editor(spots.find(s=>s.id===b.dataset.id)));
+  content.querySelectorAll('.delete-spot').forEach(b=>b.onclick=()=>{if(confirm(window.SHROOMS_I18N.t('Delete this saved spot?')))attempt(()=>{store.remove(b.dataset.id);render();});});
+  content.querySelector('#export-spots').onclick=()=>attempt(()=>{const url=URL.createObjectURL(new Blob([store.export()],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='shrooms-spots.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+  const input=content.querySelector('#import-file');content.querySelector('#import-spots').onclick=()=>input.click();input.onchange=async()=>{const file=input.files[0];if(!file)return;if(file.size>2000000){error.textContent='Invalid notebook file.';return;}try{const text=await file.text();attempt(()=>{store.import(text);render();});}catch{error.textContent='Invalid notebook file.';}};
+ }
+ function editor(spot){content.innerHTML=`<h2 id="notebook-title">${spot.id?'Edit spot':'Save this forest.'}</h2><form><label>Name<input name="name" value="${escape(spot.name)}" required maxlength="100"></label><label>Notes<textarea name="notes" rows="4" maxlength="2000">${escape(spot.notes)}</textarea></label><button type="submit">Save spot</button><button type="button" id="cancel-spot">Cancel</button></form>`;content.querySelector('#cancel-spot').onclick=()=>attempt(render);content.querySelector('form').onsubmit=e=>{e.preventDefault();attempt(()=>{store.save({...spot,...Object.fromEntries(new FormData(e.target))});render();});};
+ }
+ window.addEventListener('storage',e=>{if(e.key===window.SHROOMS_NOTEBOOK.key&&dialog.open&&!content.querySelector('form'))attempt(render);});
+})();

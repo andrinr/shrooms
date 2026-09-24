@@ -14,14 +14,14 @@
 *Zürich map walkthrough recorded September 2026, before the nationwide expansion. Scores illustrate the interface, not current conditions. Basemap: GIS-ZH and © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).*
 
 - **Locate yourself:** an optional browser location button shows your position and accuracy on the map, without saving or sending coordinates to the backend. Online map tiles reveal the viewed area to swisstopo; use the bundled map to avoid those requests.
-- **Five languages:** Deutsch, Français, Italiano, Rumantsch Grischun and English, including map explanations, warnings and accounts.
+- **Five languages:** Deutsch, Français, Italiano, Rumantsch Grischun and English, including map explanations and warnings.
 - **Zoom-aware Swiss map:** swisstopo topography across all cantons, with roads, names and contours above the heatmap. Switch to the bundled offline map anytime; blocked tiles automatically fall back.
 - **One continuous Swiss map:** local datasets load automatically as you zoom and pan, including across canton boundaries. The canton selector is a shortcut, not a filter. [Sources and detailed forest-map candidates](docs/FOREST_DATA.md).
 - **Finer habitat detail:** 50 m local cells across Switzerland, a 25 m swissTLM3D forest mask outside Zürich, and a 500 m national overview. Source precision varies; national terrain remains 200 m.
 - **Eleven mushrooms:** the original seven plus winter chanterelle, slippery jack, spruce milkcap and charcoal burner. Every profile includes ecological references and missing indicators.
 - **Soil acidity:** on-demand WSL topsoil pH predictions from a native 25 m grid, with uncertainty intervals. Shown as context, not yet used in mushroom scores. [Data, resolution and modeling limits](docs/SOIL.md).
 - **Explainable scores:** tree mix, moisture, temperature, slope, aspect and season. Missing inputs are explicitly omitted.
-- **Private accounts and saved spots:** names, notes, species, export, recovery codes and account deletion. Locations are never shared publicly.
+- **Browser notebook:** save places, species and notes locally, without an account. Export and import JSON backups to move between devices. Clearing browser data removes local spots.
 - **Shared weather:** the backend refreshes a cached snapshot every six hours, instead of making every visitor contact the provider.
 - **Protected-area overlays:** named boundaries and collection warnings, with partial coverage clearly marked.
 - **Bundled maps:** no dependency on live map tiles; pan, zoom, search municipalities and inspect forest cells.
@@ -39,11 +39,11 @@ npm run build
 npm start
 ```
 
-Open **http://localhost:3000**. Accounts and weather cache persist in `.storage/`, which is excluded from Git and frontend builds. Save the recovery code shown when creating an account; no email service is required.
+Open **http://localhost:3000**. Saved places stay in the browser’s local storage, including on static hosting. Each origin has its own notebook; export/import a backup to move between localhost and a deployed site. Only the optional weather cache needs server storage in `.storage/`.
 
 ## Deploy cheaply
 
-The recommended setup is **one small Linux server with Docker Compose**, SQLite and Caddy for automatic HTTPS. A 4 GB server leaves room for the nationwide data cache and deployment builds. Budget roughly **CHF 5–10/month**, plus domain and backup storage; actual provider prices and taxes vary.
+**Static hosting is enough:** build `_site/` and deploy to GitHub Pages. The map and notebook need no server or account. For scheduled shared weather updates, the optional Docker Compose setup runs on a small Linux server with Caddy for HTTPS.
 
 ```sh
 cp .env.example .env
@@ -80,7 +80,7 @@ npm run check
 npm test
 ```
 
-CI checks the model, all regional data, authentication, privacy, persistence, weather caching and frontend assets. A separate job builds the deployment container, checks its health, restarts it, and verifies a SQLite backup. Tests use fixed dates and committed datasets.
+CI checks the model, all regional data, browser notebook persistence, legacy account isolation, weather caching and frontend assets. A separate job builds the deployment container, checks its health, restarts it, and verifies a SQLite backup. Tests use fixed dates and committed datasets.
 
 ## Add mushrooms through GitHub
 
@@ -91,3 +91,7 @@ For a pull request, most species need only a profile and translations. The map, 
 ## License
 
 Original code, scripts, documentation and artwork are **[MIT licensed](LICENSE)**. External data and libraries retain their own terms. See **[third-party notices](THIRD_PARTY_NOTICES.md)** for attribution and service restrictions.
+
+### Existing account data
+
+The account UI and public account endpoints are retired. Existing server databases are preserved, not deleted or automatically copied into browser storage. Previously exported spot JSON files can be imported into the notebook. Local storage is specific to the browser and site address; it is not encrypted or synchronized.

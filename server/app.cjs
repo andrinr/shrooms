@@ -3,7 +3,7 @@ const {createData}=require('./data.cjs');
 const {createWeather,zurichDay}=require('./weather.cjs');
 const {createAccounts,fail}=require('./accounts.cjs');
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon','.md':'text/plain; charset=utf-8'};
-async function createApp({root=path.resolve(__dirname,'..'),staticDir=path.join(root,'_site'),storageDir=path.join(root,'.storage'),publicOrigin='',secureCookies=false,scheduler=true,fetchImpl,logger=console,now=()=>new Date(),weatherApiKey='',trustProxy=false}={}){
+async function createApp({root=path.resolve(__dirname,'..'),staticDir=path.join(root,'_site'),storageDir=path.join(root,'.storage'),publicOrigin='',secureCookies=false,scheduler=true,fetchImpl,logger=console,now=()=>new Date(),weatherApiKey='',trustProxy=false,legacyAccounts=false}={}){
  const data=createData(root),accounts=createAccounts(storageDir);
  const points=[...data.catalog.weatherPoints];
  for(const point of data.index.weatherPoints)if(!points.some(p=>p.id===point.id))points.push(point);
@@ -52,7 +52,7 @@ async function createApp({root=path.resolve(__dirname,'..'),staticDir=path.join(
    if(pathname==='/api/health'&&method==='GET')return json(res,200,{status:'ok',version:1,weather:weather.status()});
    if(pathname.startsWith('/api/')){
     rate(req,'api',240);
-    if(pathname==='/api/config'&&method==='GET')return json(res,200,{apiVersion:1,accounts:true,region:'ch',regions:data.catalog.regions,weather:'server',cellSizeMeters:data.index.metadata.cellSizeMeters});
+    if(pathname==='/api/config'&&method==='GET')return json(res,200,{apiVersion:1,accounts:legacyAccounts,region:'ch',regions:data.catalog.regions,weather:'server',cellSizeMeters:data.index.metadata.cellSizeMeters});
     if(pathname==='/api/weather'&&method==='GET')return json(res,200,{snapshot:regionalWeather(url.searchParams.get('region')||'ch'),status:weather.status()});
     if(pathname==='/api/species'&&method==='GET')return json(res,200,data.model.SHROOMS_SPECIES,{'Cache-Control':'public, max-age=3600'});
     if(pathname.startsWith('/api/data/')&&(method==='GET'||method==='HEAD')){
@@ -72,6 +72,7 @@ async function createApp({root=path.resolve(__dirname,'..'),staticDir=path.join(
      const matches=regional.cells.filter(c=>c.lon>=bbox[0]&&c.lat>=bbox[1]&&c.lon<=bbox[2]&&c.lat<=bbox[3]);
      return json(res,200,{species,date:zurichDay(now()),total:matches.length,offset,limit,cells:matches.slice(offset,offset+limit).map(c=>({...c,score:score(c,species,regional,regionId)}))});
     }
+    if(!legacyAccounts&&(pathname.startsWith('/api/auth/')||pathname.startsWith('/api/spots')||pathname==='/api/account'))return json(res,410,{error:'Accounts are retired. Saved spots now stay in your browser.'});
     const {raw,user}=auth(req);
     if(pathname==='/api/auth/me'&&method==='GET')return json(res,200,{user:user?{id:user.id,username:user.username}:null,csrf:user?.csrf||null});
     if(['/api/auth/register','/api/auth/login','/api/auth/recover'].includes(pathname)&&method==='POST'){

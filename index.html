@@ -9,25 +9,26 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://api.open-meteo.com" />
   <link rel="stylesheet" href="./vendor/leaflet.css" />
-  <link rel="stylesheet" href="./styles.css?v=20260924d" />
+  <link rel="stylesheet" href="./styles.css?v=20260924f" />
   <script defer src="./vendor/leaflet.js"></script>
   <script defer src="./data/basemap.js"></script>
-  <script defer src="./src/locales.js?v=20260924d"></script>
-  <script defer src="./src/i18n.js?v=20260924d"></script>
-  <script defer src="./src/service.js?v=20260924d"></script>
-  <script defer src="./src/loader.js?v=20260924d"></script>
-  <script defer src="./src/data.js?v=20260924d"></script>
-  <script defer src="./src/scoring.js?v=20260924d"></script>
-  <script defer src="./src/weather.js?v=20260924d"></script>
-  <script defer src="./src/heatmap.js?v=20260924d"></script>
-  <script defer src="./src/adaptive.js?v=20260924d"></script>
-  <script defer src="./src/basemap.js?v=20260924d"></script>
-  <script defer src="./src/overview.js?v=20260924d"></script>
-  <script defer src="./src/soil.js?v=20260924d"></script>
-  <script defer src="./src/detail-tiles.js?v=20260924d"></script>
-  <script defer src="./src/habitat.js?v=20260924d"></script>
-  <script defer src="./src/app.js?v=20260924d"></script>
-  <script defer src="./src/account.js?v=20260924d"></script>
+  <script defer src="./src/locales.js?v=20260924f"></script>
+  <script defer src="./src/i18n.js?v=20260924f"></script>
+  <script defer src="./src/service.js?v=20260924f"></script>
+  <script defer src="./src/loader.js?v=20260924f"></script>
+  <script defer src="./src/data.js?v=20260924f"></script>
+  <script defer src="./src/scoring.js?v=20260924f"></script>
+  <script defer src="./src/weather.js?v=20260924f"></script>
+  <script defer src="./src/heatmap.js?v=20260924f"></script>
+  <script defer src="./src/adaptive.js?v=20260924f"></script>
+  <script defer src="./src/basemap.js?v=20260924f"></script>
+  <script defer src="./src/overview.js?v=20260924f"></script>
+  <script defer src="./src/soil.js?v=20260924f"></script>
+  <script defer src="./src/detail-tiles.js?v=20260924f"></script>
+  <script defer src="./src/habitat.js?v=20260924f"></script>
+  <script defer src="./src/app.js?v=20260924f"></script>
+  <script defer src="./src/notebook-store.js?v=20260924f"></script>
+  <script defer src="./src/notebook.js?v=20260924f"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -38,13 +39,11 @@
   </header>
   <main id="top">
     <section class="hero">
-      <div class="hero-copy"><div class="eyebrow">A FIELD GUIDE FOR THE WANDERERS</div><h1>Follow<br />the <em>fungi.</em><span class="hero-star" aria-hidden="true">✳</span></h1><p>A little rain. The right trees. A promising patch of earth. Explore the conditions that make Switzerland’s forests a little more magical.</p><a class="primary-link" href="#explore">Find your forest <span aria-hidden="true">↗</span></a></div>
+      <div class="hero-copy"><h1>Follow the <em>fungi.</em><span class="hero-star" aria-hidden="true">✳</span></h1><p>A little rain. The right trees. A promising patch of earth. Explore the conditions that make Switzerland’s forests a little more magical.</p><a class="primary-link" href="#explore">Find your forest <span aria-hidden="true">↗</span></a></div>
       <img class="hero-art" src="./forest-magic.svg" alt="" />
-      <div class="hero-stamp"><span>ROOTED IN REAL DATA</span><strong>Wild colors.<br />Earthly clues.</strong><small>Forest · moisture · terrain</small></div>
     </section>
-    <div class="data-ribbon"><span><b id="dataset-count">…</b> forest cells</span><span>Official Swiss forest & terrain data</span><span>Open-Meteo moisture & weather</span><span>✳ Switzerland · regional detail</span></div>
     <section class="explore" id="explore">
-      <div class="section-heading"><div><div class="kicker">01 / READ THE FOREST</div><h2>Where the conditions come together.</h2><p>Choose a mushroom. Zoom from regional summaries into regional forest detail. Click a forest patch to see its evidence.</p></div><div class="date-pill" id="date-pill"></div></div>
+      <div class="section-heading"><div><h2>Find your forest</h2><p>Choose a mushroom, explore the map and save a promising place.</p></div><div class="date-pill" id="date-pill"></div><span id="dataset-count" hidden></span></div>
       <div class="explorer-grid">
         <aside class="sidebar">
           <div class="sidebar-head"><label for="region">JUMP TO A CANTON</label><select id="region" aria-label="Jump to a canton"></select><label for="species">On your radar</label><select id="species" aria-label="Mushroom species"><option value="porcini">Porcini · Boletus edulis</option><option value="chanterelle">Chanterelle · Cantharellus cibarius</option><option value="horn">Horn of plenty · Craterellus cornucopioides</option><option value="parasol">Parasol · Macrolepiota procera</option></select><div class="species-latin" id="species-latin"></div><details class="species-evidence" id="species-evidence"></details><label class="search-label" for="place-search">Find a municipality</label><input id="place-search" type="search" placeholder="e.g. Winterthur" autocomplete="off" /></div>
@@ -56,9 +55,8 @@
       </div>
       <p class="map-footnote">Colors show modeled habitat suitability, not known finds or a calibrated probability. Habitat scores also cover forest reserves, where collecting may be forbidden. Check local protection rules before collecting. Unshaded areas have no estimate.</p>
     </section>
-    <section class="method" id="method"><div><div class="kicker">02 / BEHIND THE COLORS</div><h2>No secret spots.<br /><em>Just better clues.</em></h2><p class="method-aside">Every patch starts with mapped forest. Every color has a reason.</p></div><div class="method-copy"><p>Explore Switzerland using a 500-metre national overview and 50-metre local detail. Scores use mapped forest, regional weather and the available terrain and tree data. Zürich tree composition and canopy come from aerial forest surveys; elsewhere tree mix comes from the national forest inventory. Zürich terrain uses 50 m samples; nationwide terrain comes from DHM25/200. National canopy and individual host-tree shares are unavailable and omitted. Recent rain, soil moisture, humidity and temperature come from Open-Meteo.</p><div class="method-steps"><div><span>01 / THE PLACE</span><strong>Forest & terrain</strong><small>Actual forest stands, canopy coverage, tree mix, slope and aspect.</small></div><div><span>02 / THE MOMENT</span><strong>Moisture & weather</strong><small>14 days of rain, recent soil moisture and humidity, 7-day temperature.</small></div><div><span>03 / THE MUSHROOM</span><strong>Species preferences</strong><small>Different tree partners, canopy preferences, temperatures and seasons.</small></div></div><p class="method-note">The ecological weights are provisional assumptions. They have not been trained or validated against mushroom observations. Weather represents a wider area; a fine forest cell is not a local weather measurement. Missing inputs are omitted and shown in the details.</p><details class="model-details"><summary>See the model & its limits <span>+</span></summary><p>The score is a weighted geometric mean: tree partners (forest-edge proxy for Parasol) 20%, canopy 10%, moisture 35%, temperature 15%, terrain 10%, season 10%. Moisture combines soil water (50%), rainfall (30%) and air humidity (20%). Missing factors are omitted and the remaining weights normalized.</p><p>Gentler slopes and north-facing terrain receive a modest moisture-retention preference. Those are assumptions, not measured mushroom responses. Sunshine is shown as regional weather context. Reference evaporation reduces the rainfall contribution as a provisional drying proxy; it is not measured forest evaporation. Canopy and aspect represent local shelter. Soil acidity, deadwood, fungal presence, picking pressure, frost damage and fine-scale microclimate are not yet modeled. Parasol habitat outside forests is not covered.</p><p>Zürich uses 50 m forest and terrain samples. Elsewhere, swissTLM3D forest coverage is rasterized at 25 m and terrain comes from a 200 m source. Aerial survey years vary by location and appear on each cell. Mapped forest reserves retain their habitat scores and have a warning overlay. Collecting may be forbidden there; the map does not establish collection permission.</p></details></div></section>
-    <section class="sources"><div class="kicker">REAL SOURCES. NO INVENTED HOTSPOTS.</div><div class="source-grid"><a href="https://geolion.zh.ch/geodatensatz/347" target="_blank" rel="noopener noreferrer"><span>GIS-ZH / FOREST STANDS</span><strong>What grows here ↗</strong><small>Aerial stand polygons, tree shares, canopy coverage and survey dates.</small></a><a href="https://www.swisstopo.admin.ch/de/landschaftsmodell-swisstlm3d" target="_blank" rel="noopener noreferrer"><span>SWISS FOREST & TERRAIN DATA</span><strong>The shape of the land ↗</strong><small>swissTLM3D forest boundaries, FOEN / WSL forest mix, DHM25/200 terrain.</small></a><a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener noreferrer"><span>OPEN-METEO / WEATHER</span><strong>What the weather’s doing ↗</strong><small>Regional weather anchors. Hosted mode refreshes a shared snapshot automatically; static mode uses a bundled snapshot and optional refresh. Weather older than 48 hours is omitted.</small></a></div></section>
-    <section class="field-notes" id="field-notes"><div class="field-intro"><div class="kicker">03 / TREAD LIGHTLY</div><h2>Good vibes.<br />Gentle footprints.</h2><p>Collection rules vary by canton and municipality. Check the rules for your selected location before collecting. Protected areas may prohibit collecting.</p><a href="https://vapko.ch/index.php/de/oekologie/kantonale-und-kommunale-pilzsammelbestimmungen" target="_blank" rel="noopener noreferrer">Check cantonal collecting rules ↗</a></div><div class="notice-card"><span class="notice-icon">!</span><div><strong id="collecting-title">Check today’s collecting status</strong><p id="collecting-copy"></p><p>This map cannot identify mushrooms. Have your collection checked by a local <a href="https://www.vapko.ch/de/eine-pilzkontrollstelle-finden" target="_blank" rel="noopener noreferrer">Pilzkontrollstelle ↗</a> before eating.</p></div></div></section>
+    <section class="method" id="method"><div><h2>No secret spots.<br /><em>Just better clues.</em></h2></div><div class="method-copy"><p>Explore Switzerland using a 500-metre national overview and 50-metre local detail. Scores use mapped forest, regional weather and the available terrain and tree data. Zürich tree composition and canopy come from aerial forest surveys; elsewhere tree mix comes from the national forest inventory. Zürich terrain uses 50 m samples; nationwide terrain comes from DHM25/200. National canopy and individual host-tree shares are unavailable and omitted. Recent rain, soil moisture, humidity and temperature come from Open-Meteo.</p><p class="method-note">The ecological weights are provisional assumptions. They have not been trained or validated against mushroom observations. Weather represents a wider area; a fine forest cell is not a local weather measurement. Missing inputs are omitted and shown in the details.</p><details class="model-details"><summary>See the model & its limits <span>+</span></summary><p>The score is a weighted geometric mean: tree partners (forest-edge proxy for Parasol) 20%, canopy 10%, moisture 35%, temperature 15%, terrain 10%, season 10%. Moisture combines soil water (50%), rainfall (30%) and air humidity (20%). Missing factors are omitted and the remaining weights normalized.</p><p>Gentler slopes and north-facing terrain receive a modest moisture-retention preference. Those are assumptions, not measured mushroom responses. Sunshine is shown as regional weather context. Reference evaporation reduces the rainfall contribution as a provisional drying proxy; it is not measured forest evaporation. Canopy and aspect represent local shelter. Soil acidity, deadwood, fungal presence, picking pressure, frost damage and fine-scale microclimate are not yet modeled. Parasol habitat outside forests is not covered.</p><p>Zürich uses 50 m forest and terrain samples. Elsewhere, swissTLM3D forest coverage is rasterized at 25 m and terrain comes from a 200 m source. Aerial survey years vary by location and appear on each cell. Mapped forest reserves retain their habitat scores and have a warning overlay. Collecting may be forbidden there; the map does not establish collection permission.</p></details></div></section>
+    <section class="field-notes" id="field-notes"><div class="field-intro"><h2>Good vibes.<br />Gentle footprints.</h2><p>Collection rules vary by canton and municipality. Check the rules for your selected location before collecting. Protected areas may prohibit collecting.</p><a href="https://vapko.ch/index.php/de/oekologie/kantonale-und-kommunale-pilzsammelbestimmungen" target="_blank" rel="noopener noreferrer">Check cantonal collecting rules ↗</a></div><div class="notice-card"><span class="notice-icon">!</span><div><strong id="collecting-title">Check today’s collecting status</strong><p id="collecting-copy"></p><p>This map cannot identify mushrooms. Have your collection checked by a local <a href="https://www.vapko.ch/de/eine-pilzkontrollstelle-finden" target="_blank" rel="noopener noreferrer">Pilzkontrollstelle ↗</a> before eating.</p></div></div></section>
   </main>
   <footer><a class="footer-brand" href="#top">shrooms ✳</a><span>For curious walks and strange little wonders.</span><div><a href="https://geolion.zh.ch/geodatensatz/347">Forest & terrain: GIS-ZH</a><a href="https://www.swisstopo.admin.ch/">Swiss data: © swisstopo · FOEN / WSL</a><a href="https://open-meteo.com/en/docs">Weather: Open-Meteo</a><a href="https://www.openstreetmap.org/copyright">Roads & places: © OpenStreetMap contributors</a></div></footer>
 </div>

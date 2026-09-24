@@ -1,5 +1,8 @@
 # HTTP API
 
+> Current release: saved spots use browser local storage with JSON import/export. Account endpoints are retired (HTTP 410). Account implementation details below document the preserved legacy system, not an available user feature.
+
+
 All routes live under `/api` on the same origin as the frontend. Responses are JSON, errors use `{ "error": "message" }`. The API is version 1, reported by `/api/config`.
 
 ## Public reads

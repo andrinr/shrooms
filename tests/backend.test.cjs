@@ -5,7 +5,7 @@ const {createData}=require('../server/data.cjs');
 
 test('accounts, private spots, CSRF, recovery, persistence and public API work end to end',async()=>{
  const storage=await fs.mkdtemp(path.join(os.tmpdir(),'shrooms-server-'));
- let app=await createApp({storageDir:storage,scheduler:false,logger:{info(){},warn(){},error(){}}});
+ let app=await createApp({legacyAccounts:true,storageDir:storage,scheduler:false,logger:{info(){},warn(){},error(){}}});
  await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
  let base=`http://127.0.0.1:${app.server.address().port}`;
  async function call(route,{method='GET',body,cookie,csrf,origin=base,headers={}}={}){
@@ -34,7 +34,7 @@ test('accounts, private spots, CSRF, recovery, persistence and public API work e
   const recovery=await call('/api/auth/recover',{method:'POST',body:{username:'alice',recoveryCode:alice.value.recoveryCode,password:'a replacement password'}});assert.equal(recovery.status,200);
   assert.equal((await call('/api/spots',a)).status,401);
   assert.equal((await call('/api/auth/recover',{method:'POST',body:{username:'alice',recoveryCode:alice.value.recoveryCode,password:'a replacement password'}})).status,401);
-  await app.close();app=await createApp({storageDir:storage,scheduler:false,logger:{info(){},warn(){},error(){}}});await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${app.server.address().port}`;
+  await app.close();app=await createApp({legacyAccounts:true,storageDir:storage,scheduler:false,logger:{info(){},warn(){},error(){}}});await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${app.server.address().port}`;
   const login=await call('/api/auth/login',{method:'POST',body:{username:'alice',password:'a replacement password'}});assert.equal(login.status,200);
   const auth={cookie:login.cookie,csrf:login.value.csrf};assert.equal((await call('/api/spots',auth)).value.spots[0].name,'Updated');
   assert.equal((await call('/api/account',{...auth,method:'DELETE',body:{password:'a replacement password'}})).status,200);
@@ -71,4 +71,13 @@ test('a recovery code can only be redeemed once even with concurrent requests',a
   assert.equal(attempts.find(r=>r.status==='rejected').reason.status,401);
   assert.equal(accounts.current(created.token),null);
  }finally{accounts.close();await fs.rm(storage,{recursive:true,force:true});}
+});
+
+test('default server retires account endpoints while preserving existing storage',async()=>{
+ const storage=await fs.mkdtemp(path.join(os.tmpdir(),'shrooms-retired-'));
+ const app=await createApp({storageDir:storage,scheduler:false,logger:{info(){},warn(){},error(){}}});
+ try{await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${app.server.address().port}`;
+ assert.equal((await (await fetch(base+'/api/config')).json()).accounts,false);
+ for(const [route,method] of [['/api/auth/register','POST'],['/api/auth/me','GET'],['/api/spots','GET'],['/api/account','DELETE']])assert.equal((await fetch(base+route,{method})).status,410);
+ }finally{await app.close();await fs.rm(storage,{recursive:true,force:true});}
 });

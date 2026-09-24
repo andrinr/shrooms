@@ -1,6 +1,13 @@
 /* Columns: English, Swiss Standard German, French, Italian, Rumantsch Grischun.
    Place names, scientific names and private notebook content retain their original form. */
 window.SHROOMS_MESSAGES=String.raw`
+Close notebook|Notizbuch schliessen|Fermer le carnet|Chiudi il taccuino|Serrar il carnet
+Import spots|Fundorte importieren|Importer des lieux|Importa luoghi|Importar lieus
+Saved only in this browser. Export a backup before clearing browser data or changing devices.|Nur in diesem Browser gespeichert. Exportiere eine Sicherung, bevor du Browserdaten löschst oder das Gerät wechselst.|Enregistrés uniquement dans ce navigateur. Exportez une sauvegarde avant d’effacer ses données ou de changer d’appareil.|Salvati solo in questo browser. Esporta una copia prima di cancellare i dati del browser o cambiare dispositivo.|Memorisà mo en quest navigatur. Exportescha ina copia avant che stizzar las datas dal navigatur u midar apparat.
+Invalid notebook file.|Ungültige Notizbuchdatei.|Fichier de carnet non valide.|File del taccuino non valido.|Datoteca dal carnet nunvalida.
+Your notebook can hold up to 500 spots.|Dein Notizbuch bietet Platz für 500 Fundorte.|Votre carnet peut contenir 500 lieux.|Il taccuino può contenere fino a 500 luoghi.|Tes carnet po cuntegnair fin a 500 lieus.
+Could not read or save your notebook. Check browser storage permissions and available space.|Dein Notizbuch konnte nicht geladen oder gespeichert werden. Prüfe die Speicherberechtigung und den freien Speicherplatz deines Browsers.|Impossible de lire ou d’enregistrer le carnet. Vérifiez les autorisations de stockage et l’espace disponible du navigateur.|Impossibile leggere o salvare il taccuino. Controlla le autorizzazioni di archiviazione e lo spazio disponibile del browser.|Il carnet n’ha betg pudì vegnir legì u memorisà. Controllescha las permissiuns e la capacitad da memorisar dal navigatur.
+Choose a mushroom, explore the map and save a promising place.|Wähle einen Pilz, erkunde die Karte und speichere einen passenden Ort.|Choisissez un champignon, explorez la carte et enregistrez un lieu prometteur.|Scegli un fungo, esplora la mappa e salva un luogo promettente.|Tscherna in bulieu, explorescha la charta e memorisescha in lieu empermettent.
 JUMP TO A CANTON|ZU EINEM KANTON SPRINGEN|ALLER À UN CANTON|VAI A UN CANTONE|IR AD IN CHANTUN
 Jump to a canton|Zu einem Kanton springen|Aller à un canton|Vai a un cantone|Ir ad in chantun
 All Switzerland|Ganze Schweiz|Toute la Suisse|Tutta la Svizzera|Entira Svizra

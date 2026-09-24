@@ -1,5 +1,8 @@
 # Architecture
 
+> Current release: saved spots use browser local storage with JSON import/export. Account endpoints are retired (HTTP 410). Account implementation details below document the preserved legacy system, not an available user feature.
+
+
 ## One deployable service
 
 Caddy terminates HTTPS and proxies to a Node 24 process. Node serves the packaged frontend, compressed geodata, a shared weather cache and account APIs. SQLite stores users, sessions and private spots in a persistent volume. There are no runtime npm dependencies.
